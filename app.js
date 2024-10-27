@@ -1,26 +1,69 @@
-var app = require('express')(),
-    server = require('http').createServer(app),
-    io = require('socket.io').listen(server),
-    ent = require('ent') // Permet de bloquer les caractères HTML (sécurité équivalente à htmlentities en PHP)
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 
-// Chargement de la page index.html
-app.get('/', function (req, res) {
-  res.sendfile(__dirname + '/index.html');
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
+app.get('/', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Chat App</title>
+            <script src="/socket.io/socket.io.js"></script>
+            <style>
+                body { font-family: Arial, sans-serif; }
+                #messages { list-style-type: none; padding: 0; }
+                #messages li { padding: 5px; }
+            </style>
+        </head>
+        <body>
+            <h1>Messagerie Instantanée</h1>
+            <ul id="messages"></ul>
+            <input id="messageInput" autocomplete="off" /><button id="sendButton">Envoyer</button>
+
+            <script>
+                const socket = io();
+
+                const messageInput = document.getElementById('messageInput');
+                const sendButton = document.getElementById('sendButton');
+                const messages = document.getElementById('messages');
+
+                sendButton.onclick = function() {
+                    const message = messageInput.value;
+                    socket.emit('message', message);
+                    messageInput.value = '';
+                };
+
+                socket.on('message', function(msg) {
+                    const item = document.createElement('li');
+                    item.textContent = msg;
+                    messages.appendChild(item);
+                    window.scrollTo(0, document.body.scrollHeight);
+                });
+            </script>
+        </body>
+        </html>
+    `);
 });
 
-io.sockets.on('connection', function (socket, pseudo) {
-    // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
-    socket.on('nouveau_client', function(pseudo) {
-        pseudo = ent.encode(pseudo);
-        socket.pseudo = pseudo;
-        socket.broadcast.emit('nouveau_client', pseudo);
+io.on('connection', (socket) => {
+    console.log('Un utilisateur est connecté');
+
+    socket.on('message', (msg) => {
+        io.emit('message', msg);
     });
 
-    // Dès qu'on reçoit un message, on récupère le pseudo de son auteur et on le transmet aux autres personnes
-    socket.on('message', function (message) {
-        message = ent.encode(message);
-        socket.broadcast.emit('message', {pseudo: socket.pseudo, message: message});
-    }); 
+    socket.on('disconnect', () => {
+        console.log('Un utilisateur s\'est déconnecté');
+    });
 });
 
-server.listen(8080);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Le serveur est en cours d'exécution sur http://localhost:${PORT}`);
+});
