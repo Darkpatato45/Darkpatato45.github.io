@@ -1,63 +1,65 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Simple</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        #chat { border: 1px solid #ccc; height: 300px; overflow-y: auto; padding: 10px; }
-        #message { width: 70%; }
-        #send { width: 25%; }
-    </style>
-</head>
-<body>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Super Chat temps réel !</title>
+        <style>
+            #zone_chat strong {
+                color: white;
+                background-color: black;
+                padding: 2px;
+            }
+        </style>
+    </head>
+ 
+    <body>
+        <h1>Le super Chat temps réel !</h1>
 
-<h1>Chat Simple</h1>
-<input type="text" id="pseudo" placeholder="Entrez votre pseudo" />
-<div id="chat"></div>
-<input type="text" id="message" placeholder="Entrez votre message" />
-<button id="send">Envoyer</button>
+        <form action="/" method="post" id="formulaire_chat">
+            <input type="text" name="message" id="message" placeholder="Votre message..." size="50" autofocus />
+            <input type="submit" id="envoi_message" value="Envoyer" />
+        </form>
 
-<script>
-    const chat = document.getElementById('chat');
-    const messageInput = document.getElementById('message');
-    const pseudoInput = document.getElementById('pseudo');
-    const sendButton = document.getElementById('send');
+        <section id="zone_chat">
+            
+        </section>
 
-    // Charger les messages du stockage local
-    function loadMessages() {
-        const messages = JSON.parse(localStorage.getItem('messages')) || [];
-        messages.forEach(msg => {
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${msg.pseudo}: ${msg.text}`;
-            chat.appendChild(messageElement);
-        });
-        chat.scrollTop = chat.scrollHeight; // faire défiler vers le bas
-    }
 
-    // Envoi d'un message
-    sendButton.addEventListener('click', () => {
-        const pseudo = pseudoInput.value.trim();
-        const messageText = messageInput.value.trim();
-        if (!pseudo || !messageText) return; // Vérifier que les champs ne sont pas vides
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
 
-        const message = { pseudo, text: messageText };
-        const messages = JSON.parse(localStorage.getItem('messages')) || [];
-        messages.push(message);
-        localStorage.setItem('messages', JSON.stringify(messages));
+            // Connexion à socket.io
+            var socket = io.connect('http://localhost:8080');
 
-        // Afficher le nouveau message
-        const messageElement = document.createElement('div');
-        messageElement.textContent = `${pseudo}: ${messageText}`;
-        chat.appendChild(messageElement);
-        messageInput.value = ''; // Réinitialiser le champ de message
-        chat.scrollTop = chat.scrollHeight; // faire défiler vers le bas
-    });
+            // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
+            var pseudo = prompt('Quel est votre pseudo ?');
+            socket.emit('nouveau_client', pseudo);
+            document.title = pseudo + ' - ' + document.title;
 
-    // Charger les messages à l'initialisation
-    loadMessages();
-</script>
+            // Quand on reçoit un message, on l'insère dans la page
+            socket.on('message', function(data) {
+                insereMessage(data.pseudo, data.message)
+            })
 
-</body>
+            // Quand un nouveau client se connecte, on affiche l'information
+            socket.on('nouveau_client', function(pseudo) {
+                $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
+            })
+
+            // Lorsqu'on envoie le formulaire, on transmet le message et on l'affiche sur la page
+            $('#formulaire_chat').submit(function () {
+                var message = $('#message').val();
+                socket.emit('message', message); // Transmet le message aux autres
+                insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+                $('#message').val('').focus(); // Vide la zone de Chat et remet le focus dessus
+                return false; // Permet de bloquer l'envoi "classique" du formulaire
+            });
+            
+            // Ajoute un message dans la page
+            function insereMessage(pseudo, message) {
+                $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
+            }
+        </script>
+    </body>
 </html>
