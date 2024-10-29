@@ -1,1 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Mentale</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .mind-map {
+            position: relative;
+            width: 600px;
+            height: 600px;
+        }
+        .central-bubble {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            background-color: #4a90e2;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .bubble {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background-color: #e94e77;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        /* Organisation des bulles en haut à gauche */
+        .causes-bubble {
+            top: 15%;
+            left: 10%;
+        }
+        .bubble-economic {
+            top: -10%;
+            left: -10%;
+        }
+        .bubble-conflict {
+            top: -12%;
+            left: 20%;
+        }
+        .bubble-natural {
+            top: 18%;
+            left: -18%;
+        }
+        .bubble-social {
+            top: 8%;
+            left: 40%;
+        }
+        /* Style pour les lignes de connexion */
+        svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="mind-map">
+        <!-- Bulle centrale -->
+        <div class="central-bubble">Un monde de migrants</div>
 
+        <!-- Première bulle reliée à la bulle centrale -->
+        <div class="bubble causes-bubble">Causes de la migration</div>
+
+        <!-- Quatre bulles secondaires positionnées en haut à gauche -->
+        <div class="bubble bubble-economic">Facteurs économiques : recherche d'emploi, conditions de vie difficiles</div>
+        <div class="bubble bubble-conflict">Conflits et guerres : réfugiés, instabilité politique</div>
+        <div class="bubble bubble-natural">Catastrophes naturelles : changements climatiques, dégradations environnementales</div>
+        <div class="bubble bubble-social">Facteurs sociaux et familiaux : regroupement familial, perspectives d’éducation</div>
+
+        <!-- Lignes de connexion -->
+        <svg>
+            <!-- Ligne entre la bulle centrale et "Causes de la migration" -->
+            <line x1="300" y1="300" x2="130" y2="90" />
+            <!-- Lignes entre "Causes de la migration" et les quatre bulles secondaires -->
+            <line x1="130" y1="90" x2="200" y2="50" />
+            <line x1="130" y1="90" x2="90" y2="200" />
+            <line x1="130" y1="90" x2="70" y2="420" />
+            <line x1="130" y1="90" x2="240" y2="330" />
+        </svg>
+    </div>
+</body>
+</html>
