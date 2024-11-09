@@ -5,39 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détection d'Appareil et Infos Système</title>
     <style>
-        /* Réinitialisation de base pour une meilleure gestion des marges et paddings */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Styles globaux pour le corps et la page */
         body, html {
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             font-family: 'Arial', sans-serif;
-            background: #3a3d42; /* Fond sombre */
-            background: linear-gradient(135deg, #3a3d42, #4f5b62); /* Gradient de fond avec effet subtil */
-            overflow: hidden; /* Empêche le défilement de la page */
-            color: #fff; /* Texte blanc par défaut */
+            background: #3a3d42;
+            background: linear-gradient(135deg, #3a3d42, #4f5b62);
+            overflow: hidden;
+            color: #fff;
+            padding: 0;
+            min-height: 100vh;  /* Permet d'assurer que la page a toujours une hauteur minimale de 100% */
         }
 
-        /* Conteneur principal */
         .container {
             width: 90%;
             max-width: 900px;
-            padding: 20px;
+            padding: 30px;
             background: rgba(0, 0, 0, 0.8);
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             text-align: center;
             overflow: hidden;
+            transition: all 0.3s ease;
+            overflow-y: auto;  /* Permet de faire défiler la page verticalement */
+            max-height: 95vh;  /* Limite la hauteur maximale pour ne pas dépasser l'écran */
         }
 
-        /* Section principale avec le titre */
         .device-info {
             font-size: 32px;
             font-weight: bold;
@@ -45,13 +46,12 @@
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             opacity: 0;
-            transform: translateY(-30px); /* Initialement un peu plus haut */
+            transform: translateY(-30px);
             animation: fadeInUp 1s ease-out forwards;
         }
 
-        /* Animation d'apparition avec effet de montée */
         @keyframes fadeInUp {
             0% {
                 opacity: 0;
@@ -63,12 +63,15 @@
             }
         }
 
-        /* Conteneur pour les sections d'informations */
         .info-section {
             margin-bottom: 20px;
-            padding: 15px;
+            padding: 20px;
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease-out forwards;
         }
 
         .info-section h3 {
@@ -82,7 +85,6 @@
             font-size: 18px;
             list-style-type: none;
             padding-left: 0;
-            margin-top: 10px;
         }
 
         .info-list li {
@@ -91,27 +93,32 @@
 
         .info-list span {
             font-weight: bold;
-        }
-
-        .info-list li span {
             color: #ffcc00;
         }
 
-        /* Style pour l'icône (si nécessaire) */
         .icon {
             margin-right: 10px;
             font-size: 24px;
             color: #ffcc00;
         }
 
-        /* Effet de survol sur les informations */
-        .info-section:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        .refresh-btn {
+            padding: 15px 30px;
+            background-color: #ffcc00;
+            color: #3a3d42;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 30px;
             transition: all 0.3s ease;
         }
 
-        /* Fond animé avec parallaxe */
+        .refresh-btn:hover {
+            background-color: #ffa500;
+            transform: scale(1.05);
+        }
+
         .background-animation {
             position: absolute;
             top: 0;
@@ -120,12 +127,11 @@
             height: 100%;
             background: url('https://source.unsplash.com/1600x900/?nature,forest') no-repeat center center fixed;
             background-size: cover;
-            filter: blur(8px); /* Flou sur le fond */
-            z-index: -1; /* Placer l'arrière-plan derrière le texte */
+            filter: blur(8px);
+            z-index: -1;
             animation: moveBackground 30s linear infinite;
         }
 
-        /* Animation pour le fond qui bouge lentement pour créer un effet de parallaxe */
         @keyframes moveBackground {
             0% {
                 transform: translateX(0);
@@ -135,42 +141,125 @@
             }
         }
 
-        /* Responsivité pour petits écrans */
-        @media (max-width: 600px) {
+        /* Media Queries pour rendre le site responsive */
+        @media (max-width: 1200px) {
             .container {
-                width: 95%;
-                padding: 10px;
+                padding: 20px;
+                width: 85%;
             }
+
             .device-info {
-                font-size: 24px;
+                font-size: 28px;
+            }
+
+            .info-section h3 {
+                font-size: 22px;
+            }
+
+            .info-list li {
+                font-size: 16px;
+            }
+
+            .refresh-btn {
+                font-size: 16px;
+                padding: 12px 25px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                width: 90%;
                 padding: 15px;
             }
+
+            .device-info {
+                font-size: 24px;
+            }
+
             .info-section h3 {
                 font-size: 20px;
             }
-            .info-list {
-                font-size: 16px;
+
+            .info-list li {
+                font-size: 14px;
+            }
+
+            .refresh-btn {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body, html {
+                padding: 10px;
+            }
+
+            .container {
+                width: 100%;
+                padding: 10px;
+            }
+
+            .device-info {
+                font-size: 22px;
+                padding: 15px;
+            }
+
+            .info-section h3 {
+                font-size: 18px;
+            }
+
+            .info-list li {
+                font-size: 12px;
+            }
+
+            .refresh-btn {
+                font-size: 12px;
+                padding: 8px 15px;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="background-animation"></div> <!-- Fond animé avec parallaxe -->
+    <div class="background-animation"></div>
 
     <div class="container">
-        <!-- Section principale pour le type d'appareil -->
         <div class="device-info" id="deviceInfo">
             Détection de l'appareil...
         </div>
 
-        <!-- Section des informations -->
         <div class="info-section">
             <h3>Informations Système</h3>
-            <ul class="info-list" id="infoList">
-                <!-- Liste d'informations supplémentaires -->
-            </ul>
+            <ul class="info-list" id="infoList"></ul>
         </div>
+
+        <div class="info-section">
+            <h3>Date et Heure</h3>
+            <ul class="info-list" id="dateTime"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Adresse IP</h3>
+            <ul class="info-list" id="ipAddress"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Position GPS</h3>
+            <ul class="info-list" id="gpsPosition"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Résolution de l'Écran</h3>
+            <ul class="info-list" id="screenResolution"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Profondeur de Couleur de l'Écran</h3>
+            <ul class="info-list" id="colorDepth"></ul>
+        </div>
+
+        <button class="refresh-btn" onclick="refreshInfo()">Actualiser</button>
     </div>
 
     <script>
@@ -179,20 +268,15 @@
             const userAgent = navigator.userAgent.toLowerCase();
             let device = 'Inconnu';
 
-            // Détection d'un appareil mobile
             if (/android/.test(userAgent)) {
                 device = 'Android';
             } else if (/iphone|ipad|ipod/.test(userAgent)) {
                 device = 'iPhone/iPad/iPod';
             } else if (/windows phone/.test(userAgent)) {
                 device = 'Windows Phone';
-            }
-            // Détection des tablettes
-            else if (/tablet/.test(userAgent)) {
+            } else if (/tablet/.test(userAgent)) {
                 device = 'Tablette';
-            }
-            // Détection d'un ordinateur de bureau ou portable
-            else if (/windows/.test(userAgent)) {
+            } else if (/windows/.test(userAgent)) {
                 device = 'Ordinateur Windows';
             } else if (/macintosh|mac os x/.test(userAgent)) {
                 device = 'Mac OS';
@@ -207,7 +291,6 @@
         function getAdditionalInfo() {
             const info = [];
 
-            // Navigateur et version
             const browserInfo = navigator.userAgent;
             let browser = 'Inconnu';
             if (/chrome|crios|crmo/.test(browserInfo)) {
@@ -222,10 +305,9 @@
                 browser = 'Internet Explorer';
             }
 
-            const platform = navigator.platform; // Plateforme (Windows, macOS, etc.)
+            const platform = navigator.platform;
             const os = navigator.oscpu || 'Inconnu';
 
-            // Ajouter ces informations à la liste
             info.push(`Navigateur: <span>${browser}</span>`);
             info.push(`Plateforme: <span>${platform}</span>`);
             info.push(`Système d'exploitation: <span>${os}</span>`);
@@ -234,19 +316,84 @@
             return info;
         }
 
-        // Afficher les informations dans la page
-        function displayInfo() {
-            // Afficher le type d'appareil
+        // Fonction pour obtenir l'adresse IP de l'utilisateur
+        async function getIpAddress() {
+            try {
+                const response = await fetch('https://ipinfo.io/json?token=YOUR_TOKEN');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return 'Inconnu';
+            }
+        }
+
+        // Fonction pour obtenir la position GPS de l'utilisateur
+        function getGpsPosition() {
+            return new Promise((resolve, reject) => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(position => {
+                        resolve(`${position.coords.latitude}, ${position.coords.longitude}`);
+                    }, reject);
+                } else {
+                    reject('GPS non disponible');
+                }
+            });
+        }
+
+        // Fonction pour obtenir la résolution de l'écran
+        function getScreenResolution() {
+            return `${screen.width} x ${screen.height}`;
+        }
+
+        // Fonction pour obtenir la profondeur de couleur de l'écran
+        function getColorDepth() {
+            return screen.colorDepth;
+        }
+
+        // Fonction pour obtenir la date et l'heure actuelle
+        function getDateTime() {
+            const now = new Date();
+            return now.toLocaleString();
+        }
+
+        // Fonction principale pour afficher toutes les informations
+        async function displayInfo() {
             document.getElementById('deviceInfo').textContent = 'Appareil détecté : ' + detectDevice();
 
-            // Ajouter les informations supplémentaires dans la liste
             const infoList = document.getElementById('infoList');
             const infoArray = getAdditionalInfo();
+            infoList.innerHTML = '';
             infoArray.forEach(info => {
                 const listItem = document.createElement('li');
                 listItem.innerHTML = info;
                 infoList.appendChild(listItem);
             });
+
+            // Affichage de l'IP
+            const ipAddress = await getIpAddress();
+            document.getElementById('ipAddress').innerHTML = `<li>IP: <span>${ipAddress}</span></li>`;
+
+            // Affichage de la position GPS
+            try {
+                const gpsPosition = await getGpsPosition();
+                document.getElementById('gpsPosition').innerHTML = `<li>Position: <span>${gpsPosition}</span></li>`;
+            } catch (error) {
+                document.getElementById('gpsPosition').innerHTML = `<li>Position: <span>Non disponible</span></li>`;
+            }
+
+            // Affichage de la résolution d'écran
+            document.getElementById('screenResolution').innerHTML = `<li>Résolution: <span>${getScreenResolution()}</span></li>`;
+
+            // Affichage de la profondeur de couleur
+            document.getElementById('colorDepth').innerHTML = `<li>Profondeur de couleur: <span>${getColorDepth()} bits</span></li>`;
+
+            // Affichage de la date et heure actuelles
+            document.getElementById('dateTime').innerHTML = `<li><span>${getDateTime()}</span></li>`;
+        }
+
+        // Fonction pour rafraîchir les informations
+        function refreshInfo() {
+            displayInfo();
         }
 
         // Charger les informations au démarrage
