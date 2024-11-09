@@ -3,164 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Articul'ulé</title>
+    <title>Détection d'Appareil et Infos Système</title>
     <style>
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+        /* Réinitialisation de base pour une meilleure gestion des marges et paddings */
+        * {
             margin: 0;
             padding: 0;
-            background-color: #ecf0f1;
-            color: #333;
+            box-sizing: border-box;
         }
-        h1 {
-            text-align: center;
-            margin: 40px 0;
-            color: #2c3e50;
-            font-size: 2.5em;
-            letter-spacing: 1px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+
+        /* Styles globaux pour le corps et la page */
+        body, html {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+            background: #3a3d42; /* Fond sombre */
+            background: linear-gradient(135deg, #3a3d42, #4f5b62); /* Gradient de fond avec effet subtil */
+            overflow: hidden; /* Empêche le défilement de la page */
+            color: #fff; /* Texte blanc par défaut */
         }
-        .menu {
-            background-color: #34495e;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .menu-item {
-            display: inline-block;
-            position: relative;
-            margin: 0 20px;
-        }
-        .menu-item:hover .dropdown {
-            display: block;
-        }
-        .dropdown {
-            display: none;
-            position: absolute;
-            background-color: #2c3e50;
-            min-width: 150px;
-            z-index: 1;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .dropdown a {
-            color: #ecf0f1;
-            padding: 10px;
-            text-decoration: none;
-            display: block;
-            transition: background 0.3s;
-        }
-        .dropdown a:hover {
-            background-color: #2980b9;
-        }
-        .article {
-            background: #ffffff;
-            border-radius: 10px;
+
+        /* Conteneur principal */
+        .container {
+            width: 90%;
+            max-width: 900px;
             padding: 20px;
-            margin: 20px auto;
-            max-width: 600px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            display: none; /* Cacher par défaut */
-            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            overflow: hidden;
         }
-        .active {
-            display: block; /* Afficher l'article actif */
+
+        /* Section principale avec le titre */
+        .device-info {
+            font-size: 32px;
+            font-weight: bold;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(-30px); /* Initialement un peu plus haut */
+            animation: fadeInUp 1s ease-out forwards;
         }
-        .article h2 {
-            margin: 0 0 15px;
-            color: #2980b9;
-            font-size: 2em;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+
+        /* Animation d'apparition avec effet de montée */
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .article p {
-            color: #555;
-            line-height: 1.7;
-            font-size: 1.1em;
+
+        /* Conteneur pour les sections d'informations */
+        .info-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .info-section h3 {
+            margin-bottom: 15px;
+            font-size: 24px;
+            text-transform: uppercase;
+            color: #ffcc00;
+        }
+
+        .info-list {
+            font-size: 18px;
+            list-style-type: none;
+            padding-left: 0;
             margin-top: 10px;
         }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #34495e;
-            color: #ecf0f1;
-            position: relative;
-            bottom: 0;
+
+        .info-list li {
+            margin-bottom: 12px;
+        }
+
+        .info-list span {
+            font-weight: bold;
+        }
+
+        .info-list li span {
+            color: #ffcc00;
+        }
+
+        /* Style pour l'icône (si nécessaire) */
+        .icon {
+            margin-right: 10px;
+            font-size: 24px;
+            color: #ffcc00;
+        }
+
+        /* Effet de survol sur les informations */
+        .info-section:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        /* Fond animé avec parallaxe */
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background: url('https://source.unsplash.com/1600x900/?nature,forest') no-repeat center center fixed;
+            background-size: cover;
+            filter: blur(8px); /* Flou sur le fond */
+            z-index: -1; /* Placer l'arrière-plan derrière le texte */
+            animation: moveBackground 30s linear infinite;
         }
-        /* Nouveau style pour le fond des articles */
-        .article:nth-child(odd) {
-            background-color: #f9f9f9;
+
+        /* Animation pour le fond qui bouge lentement pour créer un effet de parallaxe */
+        @keyframes moveBackground {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(50%);
+            }
         }
-        .article:nth-child(even) {
-            background-color: #ffffff;
+
+        /* Responsivité pour petits écrans */
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 10px;
+            }
+            .device-info {
+                font-size: 24px;
+                padding: 15px;
+            }
+            .info-section h3 {
+                font-size: 20px;
+            }
+            .info-list {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>Arcticl'ulé</h1>
-    <div class="menu">
-        <div class="menu-item">Informatique
-            <div class="dropdown">
-                <a href="#" onclick="showArticle('article1')">L'IA Générative</a>
-            </div>
-        </div>
-        <div class="menu-item">Cybersécurité
-            <div class="dropdown">
-                <a href="#" onclick="showArticle('article2')">Les Menaces de Ransomware</a>
-            </div>
-        </div>
-        <div class="menu-item">Électronique
-            <div class="dropdown">
-                <a href="#" onclick="showArticle('article3')">L'Avènement des Microcontrôleurs</a>
-            </div>
-        </div>
-        <div class="menu-item">Réseaux
-            <div class="dropdown">
-                <a href="#" onclick="showArticle('article4')">5G et l'Internet des Objets</a>
-            </div>
-        </div>
-    </div>
+    <div class="background-animation"></div> <!-- Fond animé avec parallaxe -->
 
-    <div id="articles">
-        <div class="article" id="article1">
-            <h2>L'IA Générative</h2>
-            <p>En 2024, l'intelligence artificielle générative continue de transformer les industries. Des modèles comme GPT-4 et DALL-E 2 permettent aux utilisateurs de créer du texte, des images et même de la musique de manière autonome. Cette avancée soulève des questions éthiques et de propriété intellectuelle, rendant urgent le besoin de réglementations adaptées.</p>
+    <div class="container">
+        <!-- Section principale pour le type d'appareil -->
+        <div class="device-info" id="deviceInfo">
+            Détection de l'appareil...
         </div>
-        <div class="article" id="article2">
-            <h2>Les Menaces de Ransomware</h2>
-            <p>La cybersécurité est plus que jamais sous les projecteurs avec l'augmentation des attaques par ransomware. En 2024, les entreprises sont confrontées à des menaces sophistiquées qui ciblent les données sensibles. Il est crucial pour les organisations de mettre en place des protocoles de sauvegarde robustes et des formations régulières pour leurs employés afin de minimiser les risques.</p>
-        </div>
-        <div class="article" id="article3">
-            <h2>L'Avènement des Microcontrôleurs</h2>
-            <p>Avec l'explosion des dispositifs connectés, les microcontrôleurs sont devenus indispensables dans l'électronique moderne. En 2024, des innovations comme les microcontrôleurs à faible consommation d'énergie permettent de développer des appareils plus intelligents et durables, favorisant ainsi la transition vers des technologies plus vertes.</p>
-        </div>
-        <div class="article" id="article4">
-            <h2>5G et l'Internet des Objets</h2>
-            <p>La 5G révolutionne les réseaux en offrant des vitesses de connexion ultra-rapides et une latence réduite. En 2024, cette technologie permet à l'Internet des Objets (IoT) d'atteindre de nouveaux sommets, avec des applications allant de la domotique à la santé connectée, transformant notre manière de vivre et d'interagir avec le monde.</p>
-        </div>
-    </div>
 
-    <div class="footer">
-        &copy; 2024 Articl'ulé. Tous droits réservés.
+        <!-- Section des informations -->
+        <div class="info-section">
+            <h3>Informations Système</h3>
+            <ul class="info-list" id="infoList">
+                <!-- Liste d'informations supplémentaires -->
+            </ul>
+        </div>
     </div>
 
     <script>
-        // Fonction pour afficher l'article sélectionné
-        function showArticle(articleId) {
-            const articles = document.querySelectorAll('.article');
-            articles.forEach(article => {
-                article.classList.remove('active'); // Cacher tous les articles
-            });
-            const activeArticle = document.getElementById(articleId);
-            activeArticle.classList.add('active'); // Afficher l'article sélectionné
+        // Fonction pour détecter le type d'appareil
+        function detectDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            let device = 'Inconnu';
+
+            // Détection d'un appareil mobile
+            if (/android/.test(userAgent)) {
+                device = 'Android';
+            } else if (/iphone|ipad|ipod/.test(userAgent)) {
+                device = 'iPhone/iPad/iPod';
+            } else if (/windows phone/.test(userAgent)) {
+                device = 'Windows Phone';
+            }
+            // Détection des tablettes
+            else if (/tablet/.test(userAgent)) {
+                device = 'Tablette';
+            }
+            // Détection d'un ordinateur de bureau ou portable
+            else if (/windows/.test(userAgent)) {
+                device = 'Ordinateur Windows';
+            } else if (/macintosh|mac os x/.test(userAgent)) {
+                device = 'Mac OS';
+            } else if (/linux/.test(userAgent)) {
+                device = 'Linux';
+            }
+
+            return device;
         }
 
-        // Afficher le premier article par défaut (ou changez si vous le souhaitez)
-        showArticle('article1');
+        // Fonction pour obtenir les informations supplémentaires (navigateur, plateforme)
+        function getAdditionalInfo() {
+            const info = [];
+
+            // Navigateur et version
+            const browserInfo = navigator.userAgent;
+            let browser = 'Inconnu';
+            if (/chrome|crios|crmo/.test(browserInfo)) {
+                browser = 'Google Chrome';
+            } else if (/firefox|fxios/.test(browserInfo)) {
+                browser = 'Mozilla Firefox';
+            } else if (/safari/.test(browserInfo)) {
+                browser = 'Safari';
+            } else if (/edge/.test(browserInfo)) {
+                browser = 'Microsoft Edge';
+            } else if (/msie|trident/.test(browserInfo)) {
+                browser = 'Internet Explorer';
+            }
+
+            const platform = navigator.platform; // Plateforme (Windows, macOS, etc.)
+            const os = navigator.oscpu || 'Inconnu';
+
+            // Ajouter ces informations à la liste
+            info.push(`Navigateur: <span>${browser}</span>`);
+            info.push(`Plateforme: <span>${platform}</span>`);
+            info.push(`Système d'exploitation: <span>${os}</span>`);
+            info.push(`Appareil: <span>${detectDevice()}</span>`);
+
+            return info;
+        }
+
+        // Afficher les informations dans la page
+        function displayInfo() {
+            // Afficher le type d'appareil
+            document.getElementById('deviceInfo').textContent = 'Appareil détecté : ' + detectDevice();
+
+            // Ajouter les informations supplémentaires dans la liste
+            const infoList = document.getElementById('infoList');
+            const infoArray = getAdditionalInfo();
+            infoArray.forEach(info => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = info;
+                infoList.appendChild(listItem);
+            });
+        }
+
+        // Charger les informations au démarrage
+        window.onload = displayInfo;
     </script>
 
 </body>
