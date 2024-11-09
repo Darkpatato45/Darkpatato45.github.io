@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détection d'Appareil et Infos Système</title>
+    <title>Informations de l'Appareil</title>
     <style>
         * {
             margin: 0;
@@ -22,7 +22,7 @@
             overflow: hidden;
             color: #fff;
             padding: 0;
-            min-height: 100vh;  /* Permet d'assurer que la page a toujours une hauteur minimale de 100% */
+            min-height: 100vh;
         }
 
         .container {
@@ -33,10 +33,8 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             text-align: center;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            overflow-y: auto;  /* Permet de faire défiler la page verticalement */
-            max-height: 95vh;  /* Limite la hauteur maximale pour ne pas dépasser l'écran */
+            overflow-y: auto;
+            max-height: 95vh;
         }
 
         .device-info {
@@ -117,28 +115,6 @@
         .refresh-btn:hover {
             background-color: #ffa500;
             transform: scale(1.05);
-        }
-
-        .background-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://source.unsplash.com/1600x900/?nature,forest') no-repeat center center fixed;
-            background-size: cover;
-            filter: blur(8px);
-            z-index: -1;
-            animation: moveBackground 30s linear infinite;
-        }
-
-        @keyframes moveBackground {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(50%);
-            }
         }
 
         /* Media Queries pour rendre le site responsive */
@@ -222,8 +198,6 @@
 </head>
 <body>
 
-    <div class="background-animation"></div>
-
     <div class="container">
         <div class="device-info" id="deviceInfo">
             Détection de l'appareil...
@@ -250,13 +224,28 @@
         </div>
 
         <div class="info-section">
-            <h3>Résolution de l'Écran</h3>
+            <h3>Propriétés de l'Écran</h3>
             <ul class="info-list" id="screenResolution"></ul>
         </div>
 
         <div class="info-section">
-            <h3>Profondeur de Couleur de l'Écran</h3>
+            <h3>Profondeur de Couleur</h3>
             <ul class="info-list" id="colorDepth"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Nombre de Cœurs du Processeur</h3>
+            <ul class="info-list" id="cpuCores"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>RAM Disponible</h3>
+            <ul class="info-list" id="ram"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Informations du Navigateur</h3>
+            <ul class="info-list" id="browserInfo"></ul>
         </div>
 
         <button class="refresh-btn" onclick="refreshInfo()">Actualiser</button>
@@ -287,43 +276,14 @@
             return device;
         }
 
-        // Fonction pour obtenir les informations supplémentaires (navigateur, plateforme)
-        function getAdditionalInfo() {
-            const info = [];
-
-            const browserInfo = navigator.userAgent;
-            let browser = 'Inconnu';
-            if (/chrome|crios|crmo/.test(browserInfo)) {
-                browser = 'Google Chrome';
-            } else if (/firefox|fxios/.test(browserInfo)) {
-                browser = 'Mozilla Firefox';
-            } else if (/safari/.test(browserInfo)) {
-                browser = 'Safari';
-            } else if (/edge/.test(browserInfo)) {
-                browser = 'Microsoft Edge';
-            } else if (/msie|trident/.test(browserInfo)) {
-                browser = 'Internet Explorer';
-            }
-
-            const platform = navigator.platform;
-            const os = navigator.oscpu || 'Inconnu';
-
-            info.push(`Navigateur: <span>${browser}</span>`);
-            info.push(`Plateforme: <span>${platform}</span>`);
-            info.push(`Système d'exploitation: <span>${os}</span>`);
-            info.push(`Appareil: <span>${detectDevice()}</span>`);
-
-            return info;
-        }
-
         // Fonction pour obtenir l'adresse IP de l'utilisateur
         async function getIpAddress() {
             try {
-                const response = await fetch('https://ipinfo.io/json?token=YOUR_TOKEN');
+                const response = await fetch('https://api.ipify.org?format=json');
                 const data = await response.json();
                 return data.ip;
             } catch (error) {
-                return 'Inconnu';
+                return 'Non disponible';
             }
         }
 
@@ -350,6 +310,35 @@
             return screen.colorDepth;
         }
 
+        // Fonction pour obtenir le nombre de cœurs du processeur
+        function getCpuCores() {
+            return navigator.hardwareConcurrency || 'Non disponible';
+        }
+
+        // Fonction pour obtenir la RAM disponible
+        function getRam() {
+            return navigator.deviceMemory || 'Non disponible';
+        }
+
+        // Fonction pour obtenir des informations sur le navigateur
+        function getBrowserInfo() {
+            const browserInfo = navigator.userAgent;
+            let browser = 'Inconnu';
+            if (/chrome|crios|crmo/.test(browserInfo)) {
+                browser = 'Google Chrome';
+            } else if (/firefox|fxios/.test(browserInfo)) {
+                browser = 'Mozilla Firefox';
+            } else if (/safari/.test(browserInfo)) {
+                browser = 'Safari';
+            } else if (/edge/.test(browserInfo)) {
+                browser = 'Microsoft Edge';
+            } else if (/msie|trident/.test(browserInfo)) {
+                browser = 'Internet Explorer';
+            }
+
+            return browser;
+        }
+
         // Fonction pour obtenir la date et l'heure actuelle
         function getDateTime() {
             const now = new Date();
@@ -361,7 +350,10 @@
             document.getElementById('deviceInfo').textContent = 'Appareil détecté : ' + detectDevice();
 
             const infoList = document.getElementById('infoList');
-            const infoArray = getAdditionalInfo();
+            const infoArray = [
+                `Navigateur: <span>${getBrowserInfo()}</span>`,
+                `Appareil: <span>${detectDevice()}</span>`
+            ];
             infoList.innerHTML = '';
             infoArray.forEach(info => {
                 const listItem = document.createElement('li');
@@ -386,6 +378,15 @@
 
             // Affichage de la profondeur de couleur
             document.getElementById('colorDepth').innerHTML = `<li>Profondeur de couleur: <span>${getColorDepth()} bits</span></li>`;
+
+            // Affichage du nombre de cœurs du processeur
+            document.getElementById('cpuCores').innerHTML = `<li>Cœurs du processeur: <span>${getCpuCores()}</span></li>`;
+
+            // Affichage de la RAM disponible
+            document.getElementById('ram').innerHTML = `<li>RAM: <span>${getRam()} Go</span></li>`;
+
+            // Affichage des informations du navigateur
+            document.getElementById('browserInfo').innerHTML = `<li>Informations du Navigateur: <span>${getBrowserInfo()}</span></li>`;
 
             // Affichage de la date et heure actuelles
             document.getElementById('dateTime').innerHTML = `<li><span>${getDateTime()}</span></li>`;
