@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informations de l'Appareil</title>
+    <title>Informations Complètes de l'Appareil</title>
     <style>
         * {
             margin: 0;
@@ -248,6 +248,42 @@
             <ul class="info-list" id="browserInfo"></ul>
         </div>
 
+        <!-- Nouvelles sections pour les informations supplémentaires -->
+        <div class="info-section">
+            <h3>Système d'Exploitation</h3>
+            <ul class="info-list" id="osInfo"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Langue du Navigateur</h3>
+            <ul class="info-list" id="languageInfo"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Dimensions de la Fenêtre</h3>
+            <ul class="info-list" id="windowSize"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Version de JavaScript</h3>
+            <ul class="info-list" id="jsVersion"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Densité des Pixels de l'Écran</h3>
+            <ul class="info-list" id="pixelDensity"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>État de la Batterie</h3>
+            <ul class="info-list" id="batteryInfo"></ul>
+        </div>
+
+        <div class="info-section">
+            <h3>Connexion Réseau</h3>
+            <ul class="info-list" id="networkInfo"></ul>
+        </div>
+
         <button class="refresh-btn" onclick="refreshInfo()">Actualiser</button>
     </div>
 
@@ -339,10 +375,41 @@
             return browser;
         }
 
-        // Fonction pour obtenir la date et l'heure actuelle
-        function getDateTime() {
-            const now = new Date();
-            return now.toLocaleString();
+        // Fonction pour obtenir des informations sur l'OS
+        function getOsInfo() {
+            return navigator.platform;
+        }
+
+        // Fonction pour obtenir la langue du navigateur
+        function getLanguage() {
+            return navigator.language;
+        }
+
+        // Fonction pour obtenir les dimensions de la fenêtre
+        function getWindowSize() {
+            return `${window.innerWidth} x ${window.innerHeight}`;
+        }
+
+        // Fonction pour obtenir la version de JavaScript
+        function getJsVersion() {
+            return navigator.javaEnabled() ? 'JavaScript activé' : 'JavaScript désactivé';
+        }
+
+        // Fonction pour obtenir la densité des pixels de l'écran
+        function getPixelDensity() {
+            return window.devicePixelRatio;
+        }
+
+        // Fonction pour obtenir l'état de la batterie
+        function getBatteryInfo() {
+            return navigator.getBattery ? navigator.getBattery().then(battery => {
+                return `${battery.level * 100}% - ${battery.charging ? 'Chargement en cours' : 'Non en charge'}`;
+            }) : 'Non disponible';
+        }
+
+        // Fonction pour obtenir des informations sur la connexion réseau
+        function getNetworkInfo() {
+            return navigator.connection ? `Type: ${navigator.connection.effectiveType}` : 'Non disponible';
         }
 
         // Fonction principale pour afficher toutes les informations
@@ -388,8 +455,20 @@
             // Affichage des informations du navigateur
             document.getElementById('browserInfo').innerHTML = `<li>Informations du Navigateur: <span>${getBrowserInfo()}</span></li>`;
 
+            // Affichage des informations supplémentaires
+            document.getElementById('osInfo').innerHTML = `<li>Système d'Exploitation: <span>${getOsInfo()}</span></li>`;
+            document.getElementById('languageInfo').innerHTML = `<li>Langue: <span>${getLanguage()}</span></li>`;
+            document.getElementById('windowSize').innerHTML = `<li>Dimensions Fenêtre: <span>${getWindowSize()}</span></li>`;
+            document.getElementById('jsVersion').innerHTML = `<li>Version JavaScript: <span>${getJsVersion()}</span></li>`;
+            document.getElementById('pixelDensity').innerHTML = `<li>Densité Pixels: <span>${getPixelDensity()}</span></li>`;
+
+            const batteryInfo = await getBatteryInfo();
+            document.getElementById('batteryInfo').innerHTML = `<li>Batterie: <span>${batteryInfo}</span></li>`;
+
+            document.getElementById('networkInfo').innerHTML = `<li>Connexion: <span>${getNetworkInfo()}</span></li>`;
+
             // Affichage de la date et heure actuelles
-            document.getElementById('dateTime').innerHTML = `<li><span>${getDateTime()}</span></li>`;
+            document.getElementById('dateTime').innerHTML = `<li><span>${new Date().toLocaleString()}</span></li>`;
         }
 
         // Fonction pour rafraîchir les informations
