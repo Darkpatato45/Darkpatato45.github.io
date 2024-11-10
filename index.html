@@ -1,152 +1,967 @@
 <!DOCTYPE html>
+
 <html lang="fr">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Informations Complètes de l'Appareil</title>
+
     <style>
-        /* Styles identiques */
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+
+
+
+        body, html {
+
+            height: 100%;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            font-family: 'Arial', sans-serif;
+
+            background: #3a3d42;
+
+            background: linear-gradient(135deg, #3a3d42, #4f5b62);
+
+            overflow: hidden;
+
+            color: #fff;
+
+            padding: 0;
+
+            min-height: 100vh;
+
+        }
+
+
+
+        .container {
+
+            width: 90%;
+
+            max-width: 900px;
+
+            padding: 30px;
+
+            background: rgba(0, 0, 0, 0.8);
+
+            border-radius: 15px;
+
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+            text-align: center;
+
+            overflow-y: auto;
+
+            max-height: 95vh;
+
+        }
+
+
+
+        .device-info {
+
+            font-size: 32px;
+
+            font-weight: bold;
+
+            padding: 20px;
+
+            background-color: rgba(0, 0, 0, 0.7);
+
+            border-radius: 10px;
+
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+
+            margin-bottom: 20px;
+
+            opacity: 0;
+
+            transform: translateY(-30px);
+
+            animation: fadeInUp 1s ease-out forwards;
+
+        }
+
+
+
+        @keyframes fadeInUp {
+
+            0% {
+
+                opacity: 0;
+
+                transform: translateY(-30px);
+
+            }
+
+            100% {
+
+                opacity: 1;
+
+                transform: translateY(0);
+
+            }
+
+        }
+
+
+
+        .info-section {
+
+            margin-bottom: 20px;
+
+            padding: 20px;
+
+            background-color: rgba(255, 255, 255, 0.1);
+
+            border-radius: 10px;
+
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+
+            opacity: 0;
+
+            transform: translateY(30px);
+
+            animation: fadeInUp 1s ease-out forwards;
+
+        }
+
+
+
+        .info-section h3 {
+
+            margin-bottom: 15px;
+
+            font-size: 24px;
+
+            text-transform: uppercase;
+
+            color: #ffcc00;
+
+        }
+
+
+
+        .info-list {
+
+            font-size: 18px;
+
+            list-style-type: none;
+
+            padding-left: 0;
+
+        }
+
+
+
+        .info-list li {
+
+            margin-bottom: 12px;
+
+        }
+
+
+
+        .info-list span {
+
+            font-weight: bold;
+
+            color: #ffcc00;
+
+        }
+
+
+
+        .icon {
+
+            margin-right: 10px;
+
+            font-size: 24px;
+
+            color: #ffcc00;
+
+        }
+
+
+
+        .refresh-btn {
+
+            padding: 15px 30px;
+
+            background-color: #ffcc00;
+
+            color: #3a3d42;
+
+            border: none;
+
+            border-radius: 5px;
+
+            font-size: 18px;
+
+            cursor: pointer;
+
+            margin-top: 30px;
+
+            transition: all 0.3s ease;
+
+        }
+
+
+
+        .refresh-btn:hover {
+
+            background-color: #ffa500;
+
+            transform: scale(1.05);
+
+        }
+
+
+
+        /* Media Queries pour rendre le site responsive */
+
+        @media (max-width: 1200px) {
+
+            .container {
+
+                padding: 20px;
+
+                width: 85%;
+
+            }
+
+
+
+            .device-info {
+
+                font-size: 28px;
+
+            }
+
+
+
+            .info-section h3 {
+
+                font-size: 22px;
+
+            }
+
+
+
+            .info-list li {
+
+                font-size: 16px;
+
+            }
+
+
+
+            .refresh-btn {
+
+                font-size: 16px;
+
+                padding: 12px 25px;
+
+            }
+
+        }
+
+
+
+        @media (max-width: 900px) {
+
+            .container {
+
+                width: 90%;
+
+                padding: 15px;
+
+            }
+
+
+
+            .device-info {
+
+                font-size: 24px;
+
+            }
+
+
+
+            .info-section h3 {
+
+                font-size: 20px;
+
+            }
+
+
+
+            .info-list li {
+
+                font-size: 14px;
+
+            }
+
+
+
+            .refresh-btn {
+
+                font-size: 14px;
+
+                padding: 10px 20px;
+
+            }
+
+        }
+
+
+
+        @media (max-width: 600px) {
+
+            body, html {
+
+                padding: 10px;
+
+            }
+
+
+
+            .container {
+
+                width: 100%;
+
+                padding: 10px;
+
+            }
+
+
+
+            .device-info {
+
+                font-size: 22px;
+
+                padding: 15px;
+
+            }
+
+
+
+            .info-section h3 {
+
+                font-size: 18px;
+
+            }
+
+
+
+            .info-list li {
+
+                font-size: 12px;
+
+            }
+
+
+
+            .refresh-btn {
+
+                font-size: 12px;
+
+                padding: 8px 15px;
+
+            }
+
+        }
+
     </style>
+
 </head>
+
 <body>
+
+
+
     <div class="container">
-        <div class="device-info" id="deviceInfo">Détection de l'appareil...</div>
-        
-        <!-- Sections d'informations -->
-        <div class="info-section"><h3>Informations Système</h3><ul class="info-list" id="infoList"></ul></div>
-        <div class="info-section"><h3>Date et Heure</h3><ul class="info-list" id="dateTime"></ul></div>
-        <div class="info-section"><h3>Adresse IP</h3><ul class="info-list" id="ipAddress"></ul></div>
-        <div class="info-section"><h3>Position GPS</h3><ul class="info-list" id="gpsPosition"></ul></div>
-        <div class="info-section"><h3>Propriétés de l'Écran</h3><ul class="info-list" id="screenResolution"></ul></div>
-        <div class="info-section"><h3>Profondeur de Couleur</h3><ul class="info-list" id="colorDepth"></ul></div>
-        <div class="info-section"><h3>Nombre de Cœurs du Processeur</h3><ul class="info-list" id="cpuCores"></ul></div>
-        <div class="info-section"><h3>RAM Disponible</h3><ul class="info-list" id="ram"></ul></div>
-        <div class="info-section"><h3>Informations du Navigateur</h3><ul class="info-list" id="browserInfo"></ul></div>
-        <div class="info-section"><h3>Système d'Exploitation</h3><ul class="info-list" id="osInfo"></ul></div>
-        <div class="info-section"><h3>Langue du Navigateur</h3><ul class="info-list" id="languageInfo"></ul></div>
-        <div class="info-section"><h3>Dimensions de la Fenêtre</h3><ul class="info-list" id="windowSize"></ul></div>
-        <div class="info-section"><h3>Version de JavaScript</h3><ul class="info-list" id="jsVersion"></ul></div>
-        <div class="info-section"><h3>Densité des Pixels de l'Écran</h3><ul class="info-list" id="pixelDensity"></ul></div>
-        <div class="info-section"><h3>État de la Batterie</h3><ul class="info-list" id="batteryInfo"></ul></div>
-        <div class="info-section"><h3>Connexion Réseau</h3><ul class="info-list" id="networkInfo"></ul></div>
+
+        <div class="device-info" id="deviceInfo">
+
+            Détection de l'appareil...
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Informations Système</h3>
+
+            <ul class="info-list" id="infoList"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Date et Heure</h3>
+
+            <ul class="info-list" id="dateTime"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Adresse IP</h3>
+
+            <ul class="info-list" id="ipAddress"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Position GPS</h3>
+
+            <ul class="info-list" id="gpsPosition"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Propriétés de l'Écran</h3>
+
+            <ul class="info-list" id="screenResolution"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Profondeur de Couleur</h3>
+
+            <ul class="info-list" id="colorDepth"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Nombre de Cœurs du Processeur</h3>
+
+            <ul class="info-list" id="cpuCores"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>RAM Disponible</h3>
+
+            <ul class="info-list" id="ram"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Informations du Navigateur</h3>
+
+            <ul class="info-list" id="browserInfo"></ul>
+
+        </div>
+
+
+
+        <!-- Nouvelles sections pour les informations supplémentaires -->
+
+        <div class="info-section">
+
+            <h3>Système d'Exploitation</h3>
+
+            <ul class="info-list" id="osInfo"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Langue du Navigateur</h3>
+
+            <ul class="info-list" id="languageInfo"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Dimensions de la Fenêtre</h3>
+
+            <ul class="info-list" id="windowSize"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Version de JavaScript</h3>
+
+            <ul class="info-list" id="jsVersion"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Densité des Pixels de l'Écran</h3>
+
+            <ul class="info-list" id="pixelDensity"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>État de la Batterie</h3>
+
+            <ul class="info-list" id="batteryInfo"></ul>
+
+        </div>
+
+
+
+        <div class="info-section">
+
+            <h3>Connexion Réseau</h3>
+
+            <ul class="info-list" id="networkInfo"></ul>
+
+        </div>
+
+
 
         <button class="refresh-btn" onclick="refreshInfo()">Actualiser</button>
+
     </div>
 
+
+
     <script>
+
         // Fonction pour détecter le type d'appareil
+
         function detectDevice() {
+
             const userAgent = navigator.userAgent.toLowerCase();
+
             let device = 'Inconnu';
 
-            if (/android/.test(userAgent)) device = 'Android';
-            else if (/iphone|ipad|ipod/.test(userAgent)) device = 'iPhone/iPad/iPod';
-            else if (/windows phone/.test(userAgent)) device = 'Windows Phone';
-            else if (/tablet/.test(userAgent)) device = 'Tablette';
-            else if (/windows/.test(userAgent)) device = 'Ordinateur Windows';
-            else if (/macintosh|mac os x/.test(userAgent)) device = 'Mac OS';
-            else if (/linux/.test(userAgent)) device = 'Linux';
+
+
+            if (/android/.test(userAgent)) {
+
+                device = 'Android';
+
+            } else if (/iphone|ipad|ipod/.test(userAgent)) {
+
+                device = 'iPhone/iPad/iPod';
+
+            } else if (/windows phone/.test(userAgent)) {
+
+                device = 'Windows Phone';
+
+            } else if (/tablet/.test(userAgent)) {
+
+                device = 'Tablette';
+
+            } else if (/windows/.test(userAgent)) {
+
+                device = 'Ordinateur Windows';
+
+            } else if (/macintosh|mac os x/.test(userAgent)) {
+
+                device = 'Mac OS';
+
+            } else if (/linux/.test(userAgent)) {
+
+                device = 'Linux';
+
+            }
+
+
 
             return device;
+
         }
+
+
 
         // Fonction pour obtenir l'adresse IP de l'utilisateur
+
         async function getIpAddress() {
+
             try {
+
                 const response = await fetch('https://api.ipify.org?format=json');
+
                 const data = await response.json();
+
                 return data.ip;
+
             } catch (error) {
+
                 return 'Non disponible';
+
             }
+
         }
+
+
 
         // Fonction pour obtenir la position GPS de l'utilisateur
+
         function getGpsPosition() {
+
             return new Promise((resolve, reject) => {
+
                 if (navigator.geolocation) {
+
                     navigator.geolocation.getCurrentPosition(position => {
+
                         resolve(`${position.coords.latitude}, ${position.coords.longitude}`);
+
                     }, reject);
+
                 } else {
+
                     reject('GPS non disponible');
+
                 }
+
             });
+
         }
 
-        // Fonctions pour obtenir d'autres informations
-        function getScreenResolution() { return `${screen.width} x ${screen.height}`; }
-        function getColorDepth() { return screen.colorDepth; }
-        function getCpuCores() { return navigator.hardwareConcurrency || 'Non disponible'; }
-        function getRam() { return navigator.deviceMemory || 'Non disponible'; }
-        function getBrowserInfo() { 
+
+
+        // Fonction pour obtenir la résolution de l'écran
+
+        function getScreenResolution() {
+
+            return `${screen.width} x ${screen.height}`;
+
+        }
+
+
+
+        // Fonction pour obtenir la profondeur de couleur de l'écran
+
+        function getColorDepth() {
+
+            return screen.colorDepth;
+
+        }
+
+
+
+        // Fonction pour obtenir le nombre de cœurs du processeur
+
+        function getCpuCores() {
+
+            return navigator.hardwareConcurrency || 'Non disponible';
+
+        }
+
+
+
+        // Fonction pour obtenir la RAM disponible
+
+        function getRam() {
+
+            return navigator.deviceMemory || 'Non disponible';
+
+        }
+
+
+
+        // Fonction pour obtenir des informations sur le navigateur
+
+        function getBrowserInfo() {
+
             const browserInfo = navigator.userAgent;
-            return /chrome|crios|crmo/.test(browserInfo) ? 'Google Chrome'
-                 : /firefox|fxios/.test(browserInfo) ? 'Mozilla Firefox'
-                 : /safari/.test(browserInfo) ? 'Safari'
-                 : /edge/.test(browserInfo) ? 'Microsoft Edge'
-                 : /msie|trident/.test(browserInfo) ? 'Internet Explorer' : 'Inconnu';
-        }
-        function getOsInfo() { return navigator.platform; }
-        function getLanguage() { return navigator.language; }
-        function getWindowSize() { return `${window.innerWidth} x ${window.innerHeight}`; }
-        function getJsVersion() { return navigator.javaEnabled() ? 'JavaScript activé' : 'JavaScript désactivé'; }
-        function getPixelDensity() { return window.devicePixelRatio; }
-        function getBatteryInfo() {
-            return navigator.getBattery ? navigator.getBattery().then(battery => 
-                `${battery.level * 100}% - ${battery.charging ? 'Chargement en cours' : 'Non en charge'}`) : 'Non disponible';
-        }
-        function getNetworkInfo() { return navigator.connection ? `Type: ${navigator.connection.effectiveType}` : 'Non disponible'; }
 
-        // Fonction principale pour afficher toutes les informations
-        async function displayInfo() {
-            document.getElementById('deviceInfo').textContent = 'Appareil détecté : ' + detectDevice();
+            let browser = 'Inconnu';
 
-            const infoList = document.getElementById('infoList');
-            const infoArray = [
-                `Navigateur: <span>${getBrowserInfo()}</span>`,
-                `Appareil: <span>${detectDevice()}</span>`
-            ];
-            infoList.innerHTML = '';
-            infoArray.forEach(info => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = info;
-                infoList.appendChild(listItem);
-            });
+            if (/chrome|crios|crmo/.test(browserInfo)) {
 
-            // Affichage de l'IP
-            const ipAddress = await getIpAddress();
-            document.getElementById('ipAddress').innerHTML = `<li>IP: <span>${ipAddress}</span></li>`;
+                browser = 'Google Chrome';
 
-            // Affichage de la position GPS
-            try {
-                const gpsPosition = await getGpsPosition();
-                document.getElementById('gpsPosition').innerHTML = `<li>Position: <span>${gpsPosition}</span></li>`;
-            } catch (error) {
-                document.getElementById('gpsPosition').innerHTML = `<li>Position: <span>Non disponible</span></li>`;
+            } else if (/firefox|fxios/.test(browserInfo)) {
+
+                browser = 'Mozilla Firefox';
+
+            } else if (/safari/.test(browserInfo)) {
+
+                browser = 'Safari';
+
+            } else if (/edge/.test(browserInfo)) {
+
+                browser = 'Microsoft Edge';
+
+            } else if (/msie|trident/.test(browserInfo)) {
+
+                browser = 'Internet Explorer';
+
             }
 
-            // Autres informations affichées
-            document.getElementById('screenResolution').innerHTML = `<li>Résolution: <span>${getScreenResolution()}</span></li>`;
-            document.getElementById('colorDepth').innerHTML = `<li>Profondeur de couleur: <span>${getColorDepth()} bits</span></li>`;
-            document.getElementById('cpuCores').innerHTML = `<li>Cœurs du processeur: <span>${getCpuCores()}</span></li>`;
-            document.getElementById('ram').innerHTML = `<li>RAM: <span>${getRam()} Go</span></li>`;
-            document.getElementById('browserInfo').innerHTML = `<li>Informations du Navigateur: <span>${getBrowserInfo()}</span></li>`;
-            document.getElementById('osInfo').innerHTML = `<li>Système d'Exploitation: <span>${getOsInfo()}</span></li>`;
-            document.getElementById('languageInfo').innerHTML = `<li>Langue: <span>${getLanguage()}</span></li>`;
-            document.getElementById('windowSize').innerHTML = `<li>Dimensions Fenêtre: <span>${getWindowSize()}</span></li>`;
-            document.getElementById('jsVersion').innerHTML = `<li>Version JavaScript: <span>${getJsVersion()}</span></li>`;
-            document.getElementById('pixelDensity').innerHTML = `<li>Densité Pixels: <span>${getPixelDensity()}</span></li>`;
 
-            const batteryInfo = await getBatteryInfo();
-            document.getElementById('batteryInfo').innerHTML = `<li>Batterie: <span>${batteryInfo}</span></li>`;
-            document.getElementById('networkInfo').innerHTML = `<li>Connexion Réseau: <span>${getNetworkInfo()}</span></li>`;
+
+            return browser;
+
         }
 
-        // Rafraîchir les informations
-        function refreshInfo() { displayInfo(); }
 
-        displayInfo();
+
+        // Fonction pour obtenir des informations sur l'OS
+
+        function getOsInfo() {
+
+            return navigator.platform;
+
+        }
+
+
+
+        // Fonction pour obtenir la langue du navigateur
+
+        function getLanguage() {
+
+            return navigator.language;
+
+        }
+
+
+
+        // Fonction pour obtenir les dimensions de la fenêtre
+
+        function getWindowSize() {
+
+            return `${window.innerWidth} x ${window.innerHeight}`;
+
+        }
+
+
+
+        // Fonction pour obtenir la version de JavaScript
+
+        function getJsVersion() {
+
+            return navigator.javaEnabled() ? 'JavaScript activé' : 'JavaScript désactivé';
+
+        }
+
+
+
+        // Fonction pour obtenir la densité des pixels de l'écran
+
+        function getPixelDensity() {
+
+            return window.devicePixelRatio;
+
+        }
+
+
+
+        // Fonction pour obtenir l'état de la batterie
+
+        function getBatteryInfo() {
+
+            return navigator.getBattery ? navigator.getBattery().then(battery => {
+
+                return `${battery.level * 100}% - ${battery.charging ? 'Chargement en cours' : 'Non en charge'}`;
+
+            }) : 'Non disponible';
+
+        }
+
+
+
+        // Fonction pour obtenir des informations sur la connexion réseau
+
+        function getNetworkInfo() {
+
+            return navigator.connection ? `Type: ${navigator.connection.effectiveType}` : 'Non disponible';
+
+        }
+
+
+
+        // Fonction principale pour afficher toutes les informations
+
+        async function displayInfo() {
+
+            document.getElementById('deviceInfo').textContent = 'Appareil détecté : ' + detectDevice();
+
+
+
+            const infoList = document.getElementById('infoList');
+
+            const infoArray = [
+
+                `Navigateur: <span>${getBrowserInfo()}</span>`,
+
+                `Appareil: <span>${detectDevice()}</span>`
+
+            ];
+
+            infoList.innerHTML = '';
+
+            infoArray.forEach(info => {
+
+                const listItem = document.createElement('li');
+
+                listItem.innerHTML = info;
+
+                infoList.appendChild(listItem);
+
+            });
+
+
+
+            // Affichage de l'IP
+
+            const ipAddress = await getIpAddress();
+
+            document.getElementById('ipAddress').innerHTML = `<li>IP: <span>${ipAddress}</span></li>`;
+
+
+
+            // Affichage de la position GPS
+
+            try {
+
+                const gpsPosition = await getGpsPosition();
+
+                document.getElementById('gpsPosition').innerHTML = `<li>Position: <span>${gpsPosition}</span></li>`;
+
+            } catch (error) {
+
+                document.getElementById('gpsPosition').innerHTML = `<li>Position: <span>Non disponible</span></li>`;
+
+            }
+
+
+
+            // Affichage de la résolution d'écran
+
+            document.getElementById('screenResolution').innerHTML = `<li>Résolution: <span>${getScreenResolution()}</span></li>`;
+
+
+
+            // Affichage de la profondeur de couleur
+
+            document.getElementById('colorDepth').innerHTML = `<li>Profondeur de couleur: <span>${getColorDepth()} bits</span></li>`;
+
+
+
+            // Affichage du nombre de cœurs du processeur
+
+            document.getElementById('cpuCores').innerHTML = `<li>Cœurs du processeur: <span>${getCpuCores()}</span></li>`;
+
+
+
+            // Affichage de la RAM disponible
+
+            document.getElementById('ram').innerHTML = `<li>RAM: <span>${getRam()} Go</span></li>`;
+
+
+
+            // Affichage des informations du navigateur
+
+            document.getElementById('browserInfo').innerHTML = `<li>Informations du Navigateur: <span>${getBrowserInfo()}</span></li>`;
+
+
+
+            // Affichage des informations supplémentaires
+
+            document.getElementById('osInfo').innerHTML = `<li>Système d'Exploitation: <span>${getOsInfo()}</span></li>`;
+
+            document.getElementById('languageInfo').innerHTML = `<li>Langue: <span>${getLanguage()}</span></li>`;
+
+            document.getElementById('windowSize').innerHTML = `<li>Dimensions Fenêtre: <span>${getWindowSize()}</span></li>`;
+
+            document.getElementById('jsVersion').innerHTML = `<li>Version JavaScript: <span>${getJsVersion()}</span></li>`;
+
+            document.getElementById('pixelDensity').innerHTML = `<li>Densité Pixels: <span>${getPixelDensity()}</span></li>`;
+
+
+
+            const batteryInfo = await getBatteryInfo();
+
+            document.getElementById('batteryInfo').innerHTML = `<li>Batterie: <span>${batteryInfo}</span></li>`;
+
+
+
+            document.getElementById('networkInfo').innerHTML = `<li>Connexion: <span>${getNetworkInfo()}</span></li>`;
+
+
+
+            // Affichage de la date et heure actuelles
+
+            document.getElementById('dateTime').innerHTML = `<li><span>${new Date().toLocaleString()}</span></li>`;
+
+        }
+
+
+
+        // Fonction pour rafraîchir les informations
+
+        function refreshInfo() {
+
+            displayInfo();
+
+        }
+
+
+
+        // Charger les informations au démarrage
+
+        window.onload = displayInfo;
+
     </script>
+
+
+
 </body>
+
 </html>
