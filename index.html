@@ -16,11 +16,12 @@
             height: 100%;
             width: 100%;
             font-family: 'Poppins', Arial, sans-serif;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         /* DESIGN GLOBAL */
         body {
-            background: #1d2b64; /* Dégradé sombre */
+            background: #1d2b64; /* Dégradé sombre par défaut */
             color: #ffffff;
             display: flex;
             justify-content: center;
@@ -59,7 +60,13 @@
             padding: 15px;
             transition: transform 0.3s ease;
             z-index: 100;
-            display: none; /* Cacher par défaut */
+            display: none;
+            backdrop-filter: blur(5px); /* Effet de flou sur l'arrière-plan */
+        }
+
+        .notifications.top {
+            top: 20px;
+            bottom: auto;
         }
 
         .notifications h3 {
@@ -130,7 +137,26 @@
             transform: scale(0.9);
         }
 
-        /* Bouton de changement de thème */
+        /* Thème clair */
+        body.light-theme {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        body.light-theme .notifications {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        body.light-theme .toggle-btn {
+            background: #2a5298;
+        }
+
+        body.light-theme .theme-toggle-btn {
+            background: #2a5298;
+            color: #ffffff;
+        }
+
+        /* Options du thème */
         .theme-toggle-btn {
             position: absolute;
             top: 80px;
@@ -149,23 +175,33 @@
             color: #ff6347;
         }
 
-        /* Thème sombre clair */
-        body.light-theme {
-            background: #f0f0f0;
-            color: #333;
+        .options-container {
+            position: absolute;
+            top: 10%;
+            left: 20px;
+            width: 250px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
-        body.light-theme .notifications {
-            background: rgba(255, 255, 255, 0.8);
+        .options-container.active {
+            display: flex;
         }
 
-        body.light-theme .toggle-btn {
-            background: #2a5298;
+        .option {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: white;
         }
 
-        body.light-theme .theme-toggle-btn {
-            background: #2a5298;
-            color: #ffffff;
+        .option input {
+            width: 50px;
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -177,6 +213,27 @@
         <div id="notificationList"></div>
     </div>
     <button class="theme-toggle-btn" id="themeToggle">🌙</button>
+    <div class="options-container" id="optionsContainer">
+        <div class="option">
+            <label>Position des notifications :</label>
+            <select id="notificationPosition">
+                <option value="bottom">Bas</option>
+                <option value="top">Haut</option>
+            </select>
+        </div>
+        <div class="option">
+            <label>Nombre de notifications visibles :</label>
+            <input type="number" id="maxNotifications" value="5" min="1" max="20">
+        </div>
+        <div class="option">
+            <label>Vitesse de l'animation (ms) :</label>
+            <input type="number" id="animationSpeed" value="300" min="100" max="1000">
+        </div>
+        <div class="option">
+            <label>Activer son de notification :</label>
+            <input type="checkbox" id="notificationSound">
+        </div>
+    </div>
 
     <script>
         const info = document.getElementById('info');
@@ -184,66 +241,84 @@
         const notifications = document.getElementById('notifications');
         const toggleNotifications = document.getElementById('toggleNotifications');
         const themeToggle = document.getElementById('themeToggle');
-        const maxNotifications = 10; // Nombre maximum de notifications
+        const optionsContainer = document.getElementById('optionsContainer');
+        const notificationPosition = document.getElementById('notificationPosition');
+        const maxNotificationsInput = document.getElementById('maxNotifications');
+        const animationSpeedInput = document.getElementById('animationSpeed');
+        const notificationSoundInput = document.getElementById('notificationSound');
 
-        // Fonction pour afficher les coordonnées
-        function showCoordinates(screenX, screenY) {
-            info.textContent = `Coordonnées écran : X=${screenX}, Y=${screenY}`;
-        }
+        let notificationsData = [];
 
-        // Fonction pour ajouter une notification
-        function addNotification(text) {
-            const notification = document.createElement('div');
-            notification.classList.add('notification-item');
-            notification.textContent = text;
-
-            // Ajouter un bouton pour fermer la notification
-            const closeBtn = document.createElement('button');
-            closeBtn.textContent = '❌';
-            closeBtn.classList.add('close-notification');
-            closeBtn.onclick = () => notification.remove();
-
-            notification.appendChild(closeBtn);
-
-            // Ajouter la notification en haut de la liste
-            notificationList.prepend(notification);
-
-            // Supprimer les notifications si elles dépassent la limite
-            if (notificationList.children.length > maxNotifications) {
-                notificationList.removeChild(notificationList.lastChild);
-            }
-        }
-
-        // Fonction pour basculer l'affichage des notifications
+        // Toggle notifications visibility
         toggleNotifications.addEventListener('click', () => {
-            if (notifications.style.display === 'none' || notifications.style.display === '') {
-                notifications.style.display = 'block';
+            notifications.classList.toggle('active');
+            if (notifications.classList.contains('active')) {
+                toggleNotifications.innerHTML = '❌';
             } else {
-                notifications.style.display = 'none';
+                toggleNotifications.innerHTML = '🔔';
             }
         });
 
-        // Fonction pour changer de thème
+        // Theme toggle
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('light-theme');
-            themeToggle.textContent = document.body.classList.contains('light-theme') ? '🌞' : '🌙';
+            themeToggle.innerHTML = document.body.classList.contains('light-theme') ? '🌞' : '🌙';
         });
 
-        // Gestion des clics souris
+        // Options container toggle
+        themeToggle.addEventListener('dblclick', () => {
+            optionsContainer.classList.toggle('active');
+        });
+
+        // Add notification function
+        function addNotification(message) {
+            if (notificationsData.length >= parseInt(maxNotificationsInput.value)) {
+                notificationsData.shift();
+            }
+
+            notificationsData.push(message);
+            updateNotificationList();
+            playNotificationSound();
+        }
+
+        // Update the notification list
+        function updateNotificationList() {
+            notificationList.innerHTML = '';
+            notificationsData.forEach((msg, index) => {
+                const notification = document.createElement('div');
+                notification.classList.add('notification-item');
+                notification.innerHTML = `${msg} <button class="close-notification" onclick="removeNotification(${index})">❌</button>`;
+                notification.style.transition = `all ${animationSpeedInput.value}ms ease`;
+                notificationList.appendChild(notification);
+            });
+        }
+
+        // Remove notification
+        function removeNotification(index) {
+            notificationsData.splice(index, 1);
+            updateNotificationList();
+        }
+
+        // Play notification sound
+        function playNotificationSound() {
+            if (notificationSoundInput.checked) {
+                const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+                audio.play();
+            }
+        }
+
+        // Set notification position
+        notificationPosition.addEventListener('change', () => {
+            const position = notificationPosition.value;
+            notifications.classList.toggle('top', position === 'top');
+        });
+
+        // Event listener for mouse clicks to show coordinates
         document.addEventListener('click', (event) => {
-            const screenX = event.screenX;
-            const screenY = event.screenY;
-            showCoordinates(screenX, screenY);
-            addNotification(`Clic : X=${screenX}, Y=${screenY}`);
-        });
-
-        // Gestion des touchers sur mobile
-        document.addEventListener('touchstart', (event) => {
-            const touch = event.touches[0];
-            const screenX = touch.screenX;
-            const screenY = touch.screenY;
-            showCoordinates(screenX, screenY);
-            addNotification(`Toucher : X=${screenX}, Y=${screenY}`);
+            const cursorX = event.pageX;
+            const cursorY = event.pageY;
+            info.textContent = `Position du curseur : X: ${cursorX}, Y: ${cursorY}`;
+            addNotification(`Nouvelle position : X: ${cursorX}, Y: ${cursorY}`);
         });
     </script>
 </body>
