@@ -3,100 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Interactif Amélioré</title>
+    <title>Améliorations Notifications</title>
     <style>
+        /* RESET */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+            font-family: 'Poppins', Arial, sans-serif;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* BACKGROUND */
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #1e3c72, #2a5298);
-            color: #fff;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+        }
+
+        /* INFO */
+        #info {
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+        /* BUTTON TOGGLE */
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #ff6347;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
         }
 
-        button {
-            background: #ff6f61;
+        .toggle-btn:hover {
+            background: #ff4500;
+            transform: scale(1.1);
+        }
+
+        /* NOTIFICATIONS CONTAINER */
+        .notifications {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            max-height: 50%;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            display: none;
+            z-index: 10;
+        }
+
+        .notifications.active {
+            display: block;
+            animation: slide-up 0.5s ease-out forwards;
+        }
+
+        @keyframes slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notifications h3 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+            color: #ffffff;
+        }
+
+        .notification-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .notification-item:hover {
+            transform: scale(1.05);
+        }
+
+        /* THEME BUTTON */
+        .theme-toggle-btn {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #1e90ff;
             color: #fff;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-size: 1rem;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s ease;
-        }
-
-        button:hover {
-            background: #ff483d;
-        }
-
-        .info {
-            margin-top: 10px;
             font-size: 1.2rem;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .toggle-btn {
+                top: 10px;
+                right: 10px;
+            }
+
+            .notifications {
+                right: 10px;
+                left: 10px;
+                max-height: 70%;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Notifications Actives</h1>
-    <button id="notify">Activer Notifications</button>
-    <p class="info">Cliquez sur l'écran pour enregistrer votre position.</p>
+    <div id="info">Cliquez ou touchez pour obtenir les coordonnées de votre curseur.</div>
+    <button class="toggle-btn" id="toggleNotifications">🔔</button>
+    <div class="notifications" id="notifications">
+        <h3>Notifications</h3>
+        <div id="notificationList"></div>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggle">🌙</button>
 
     <script>
-        // Enregistrement du Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker enregistré avec succès.', reg))
-                .catch(err => console.error('Erreur d\'enregistrement du Service Worker :', err));
-        }
+        const info = document.getElementById('info');
+        const notifications = document.getElementById('notifications');
+        const notificationList = document.getElementById('notificationList');
+        const toggleNotifications = document.getElementById('toggleNotifications');
+        const themeToggle = document.getElementById('themeToggle');
 
-        // Gestion des notifications
-        const notifyButton = document.getElementById('notify');
+        let notificationsData = [];
+        let notificationCount = 0;
 
-        notifyButton.addEventListener('click', () => {
-            if (!('Notification' in window)) {
-                alert("Les notifications ne sont pas supportées sur ce navigateur.");
-                return;
-            }
-
-            // Demander la permission
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    new Notification("Notifications activées !", {
-                        body: "Vous recevrez des notifications même en arrière-plan.",
-                        icon: "https://via.placeholder.com/100"
-                    });
-                } else {
-                    alert("Notifications refusées.");
-                }
-            });
+        // Toggle notifications
+        toggleNotifications.addEventListener('click', () => {
+            notifications.classList.toggle('active');
+            toggleNotifications.innerHTML = notifications.classList.contains('active') ? '❌' : '🔔';
         });
 
-        // Écouter les clics pour enregistrer les positions
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            themeToggle.innerHTML = document.body.classList.contains('light-theme') ? '🌞' : '🌙';
+        });
+
+        // Add notification
+        function addNotification(message) {
+            notificationsData.push(message);
+            notificationCount++;
+            toggleNotifications.innerHTML = `🔔 (${notificationCount})`;
+            updateNotificationList();
+        }
+
+        function updateNotificationList() {
+            notificationList.innerHTML = '';
+            notificationsData.forEach((msg, index) => {
+                const item = document.createElement('div');
+                item.classList.add('notification-item');
+                item.innerHTML = `${msg} <button onclick="removeNotification(${index})">❌</button>`;
+                notificationList.appendChild(item);
+            });
+        }
+
+        function removeNotification(index) {
+            notificationsData.splice(index, 1);
+            notificationCount--;
+            toggleNotifications.innerHTML = `🔔 (${notificationCount})`;
+            updateNotificationList();
+        }
+
+        // Track mouse coordinates
         document.addEventListener('click', (event) => {
             const x = event.pageX;
             const y = event.pageY;
-            if (Notification.permission === "granted") {
-                navigator.serviceWorker.ready.then(sw => {
-                    sw.showNotification("Position enregistrée", {
-                        body: `X=${x}, Y=${y}`,
-                        icon: "https://via.placeholder.com/100"
-                    });
-                });
-            }
+            info.textContent = `Position du curseur : X=${x}, Y=${y}`;
+            addNotification(`Position : X=${x}, Y=${y}`);
         });
     </script>
 </body>
