@@ -5,32 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Position sur tout l'écran</title>
     <style>
+        /* Styles de base pour occuper tout l'écran */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden; /* Empêche le défilement */
-        }
-        body {
+            background: linear-gradient(135deg, #141e30, #243b55); /* Dégradé moderne */
+            font-family: 'Poppins', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #1e1e1e;
-            color: white;
-            font-family: Arial, sans-serif;
-            position: relative;
         }
+
+        /* Style pour l'info-box */
         #info {
             position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 16px;
-            z-index: 1000;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #info:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* Animation subtile d'apparition */
+        #info {
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Animation sur clic */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -50,6 +91,7 @@
             const screenX = event.screenX; // Coordonnée X relative à l'écran complet
             const screenY = event.screenY; // Coordonnée Y relative à l'écran complet
             showCoordinates(screenX, screenY);
+            createRipple(event); // Ajout d'un effet visuel
         });
 
         // Gestion des touchers sur mobile
@@ -58,7 +100,18 @@
             const screenX = touch.screenX; // Coordonnée X relative à l'écran complet
             const screenY = touch.screenY; // Coordonnée Y relative à l'écran complet
             showCoordinates(screenX, screenY);
+            createRipple(touch); // Ajout d'un effet visuel
         });
+
+        // Fonction pour créer l'effet visuel (ripple effect)
+        function createRipple(event) {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.left = `${event.clientX}px`;
+            ripple.style.top = `${event.clientY}px`;
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600); // Supprime l'effet après animation
+        }
     </script>
 </body>
 </html>
