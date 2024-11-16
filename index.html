@@ -47,6 +47,7 @@
             padding: 10px;
             color: white;
             font-size: 0.9rem;
+            display: none; /* Caché par défaut */
         }
 
         .notifications h3 {
@@ -71,6 +72,30 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        /* Bouton rond */
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #ffffff;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #2a5298;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .toggle-btn:hover {
+            background: #e0e0e0;
+        }
+
         /* Animation d'apparition */
         @keyframes fadeIn {
             from {
@@ -89,7 +114,8 @@
 </head>
 <body>
     <div id="info">Cliquez ou touchez pour voir les coordonnées sur tout l'écran.</div>
-    <div class="notifications">
+    <button class="toggle-btn" id="toggleNotifications">🔔</button>
+    <div class="notifications" id="notifications">
         <h3>Dernières Notifications</h3>
         <div id="notificationList"></div>
     </div>
@@ -97,6 +123,8 @@
     <script>
         const info = document.getElementById('info');
         const notificationList = document.getElementById('notificationList');
+        const notifications = document.getElementById('notifications');
+        const toggleNotifications = document.getElementById('toggleNotifications');
         const maxNotifications = 10; // Maximum de notifications à afficher
 
         // Fonction pour afficher les coordonnées
@@ -118,6 +146,15 @@
                 notificationList.removeChild(notificationList.lastChild);
             }
         }
+
+        // Fonction pour basculer l'affichage des notifications
+        toggleNotifications.addEventListener('click', () => {
+            if (notifications.style.display === 'none' || notifications.style.display === '') {
+                notifications.style.display = 'block';
+            } else {
+                notifications.style.display = 'none';
+            }
+        });
 
         // Gestion des clics souris
         document.addEventListener('click', (event) => {
