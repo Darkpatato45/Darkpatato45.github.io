@@ -1,31 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Test Notifications</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Interactif</title>
+    <style>
+        /* Reset de base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background 0.3s, color 0.3s;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        :root {
+            --background-color: #141e30;
+            --text-color: white;
+            --button-color: #ff6347;
+            --button-hover: #ff4500;
+            --menu-color: rgba(255, 255, 255, 0.1);
+            --menu-hover: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 30px;
+            background: var(--button-color);
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .button:hover {
+            background: var(--button-hover);
+        }
+
+        #notificationButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--button-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease;
+        }
+
+        #notificationButton:hover {
+            background: var(--button-hover);
+        }
+
+        #menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background: var(--menu-color);
+            backdrop-filter: blur(10px);
+            box-shadow: -2px 0 6px rgba(0, 0, 0, 0.3);
+            transition: right 0.4s ease;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+
+        #menu.active {
+            right: 0;
+        }
+
+        .menu-item {
+            width: 100%;
+            padding: 15px 10px;
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px 0;
+            transition: background 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background: var(--menu-hover);
+        }
+
+        .mode-switch {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <button id="sendNotification">Envoyer une Notification</button>
+    <div class="container">
+        <h1>Site Interactif Amélioré</h1>
+        <button class="button" id="toggleMode">Activer Mode Clair</button>
+        <p id="info">Cliquez n'importe où pour voir vos coordonnées !</p>
+    </div>
+
+    <!-- Bouton de notification -->
+    <button id="notificationButton">🔔</button>
+
+    <!-- Menu latéral -->
+    <div id="menu">
+        <h2>Options</h2>
+        <div class="menu-item">Historique des clics</div>
+        <div class="menu-item">Réglages</div>
+        <div class="menu-item mode-switch">Mode sombre/clair</div>
+    </div>
+
     <script>
-        document.getElementById('sendNotification').addEventListener('click', () => {
-            // Vérifiez les permissions
-            if (Notification.permission === "granted") {
-                new Notification("Test Notification", {
-                    body: "Ceci est une notification de test.",
-                    icon: "https://via.placeholder.com/100" // Ajoutez une icône personnalisée
-                });
-            } else if (Notification.permission === "default") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        new Notification("Notification activée !", {
-                            body: "Merci d'avoir activé les notifications."
-                        });
-                    } else {
-                        alert("Vous avez refusé les notifications.");
-                    }
-                });
+        const info = document.getElementById('info');
+        const notificationButton = document.getElementById('notificationButton');
+        const menu = document.getElementById('menu');
+        const toggleModeButton = document.getElementById('toggleMode');
+
+        // Mode sombre/clair
+        let darkMode = true;
+
+        toggleModeButton.addEventListener('click', () => {
+            darkMode = !darkMode;
+            if (darkMode) {
+                document.documentElement.style.setProperty('--background-color', '#141e30');
+                document.documentElement.style.setProperty('--text-color', 'white');
+                toggleModeButton.textContent = 'Activer Mode Clair';
             } else {
-                alert("Les notifications sont bloquées dans vos paramètres.");
+                document.documentElement.style.setProperty('--background-color', 'white');
+                document.documentElement.style.setProperty('--text-color', '#141e30');
+                toggleModeButton.textContent = 'Activer Mode Sombre';
             }
+        });
+
+        // Notifications via menu
+        notificationButton.addEventListener('click', () => {
+            menu.classList.toggle('active');
+        });
+
+        // Afficher les coordonnées
+        document.addEventListener('click', (event) => {
+            const x = event.pageX;
+            const y = event.pageY;
+            info.textContent = `Position : X=${x}, Y=${y}`;
         });
     </script>
 </body>
