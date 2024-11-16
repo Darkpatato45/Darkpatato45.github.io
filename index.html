@@ -1,224 +1,117 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Améliorations Notifications</title>
+    <title>Position sur tout l'écran</title>
     <style>
-        /* RESET */
-        * {
+        /* Styles de base pour occuper tout l'écran */
+        html, body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
+            width: 100%;
             height: 100%;
+            overflow: hidden; /* Empêche le défilement */
+            background: linear-gradient(135deg, #141e30, #243b55); /* Dégradé moderne */
             font-family: 'Poppins', Arial, sans-serif;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        /* BACKGROUND */
-        body {
-            background: linear-gradient(to right, #141e30, #243b55);
-            color: #ffffff;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
         }
 
-        /* INFO */
+        /* Style pour l'info-box */
         #info {
-            margin: 20px auto;
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 15px 25px;
+            border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 400px;
+            text-align: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease-in-out;
         }
 
-        /* BUTTON TOGGLE */
-        .toggle-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: #ff6347;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: transform 0.3s ease, background 0.3s ease;
+        #info:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateX(-50%) scale(1.05);
         }
 
-        .toggle-btn:hover {
-            background: #ff4500;
-            transform: scale(1.1);
+        /* Animation subtile d'apparition */
+        #info {
+            opacity: 0;
+            animation: fadeIn 1s forwards;
         }
 
-        /* NOTIFICATIONS CONTAINER */
-        .notifications {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 320px;
-            max-height: 50%;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            display: none;
-            z-index: 10;
-        }
-
-        .notifications.active {
-            display: block;
-            animation: slide-up 0.5s ease-out forwards;
-        }
-
-        @keyframes slide-up {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
             }
         }
 
-        .notifications h3 {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 1.4rem;
-            color: #ffffff;
-        }
-
-        .notification-item {
-            background: rgba(255, 255, 255, 0.1);
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            font-size: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.3s ease;
-        }
-
-        .notification-item:hover {
-            transform: scale(1.05);
-        }
-
-        /* THEME BUTTON */
-        .theme-toggle-btn {
-            position: fixed;
-            top: 90px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: #1e90ff;
-            color: #fff;
-            border: none;
+        /* Animation sur clic */
+        .ripple {
+            position: absolute;
             border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            font-size: 1.2rem;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
         }
 
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 768px) {
-            .toggle-btn {
-                top: 10px;
-                right: 10px;
-            }
-
-            .notifications {
-                right: 10px;
-                left: 10px;
-                max-height: 70%;
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div id="info">Cliquez ou touchez pour obtenir les coordonnées de votre curseur.</div>
-    <button class="toggle-btn" id="toggleNotifications">🔔</button>
-    <div class="notifications" id="notifications">
-        <h3>Notifications</h3>
-        <div id="notificationList"></div>
-    </div>
-    <button class="theme-toggle-btn" id="themeToggle">🌙</button>
+    <div id="info">Cliquez ou touchez pour voir les coordonnées sur tout l'écran.</div>
 
     <script>
         const info = document.getElementById('info');
-        const notifications = document.getElementById('notifications');
-        const notificationList = document.getElementById('notificationList');
-        const toggleNotifications = document.getElementById('toggleNotifications');
-        const themeToggle = document.getElementById('themeToggle');
 
-        let notificationsData = [];
-        let notificationCount = 0;
-
-        // Toggle notifications
-        toggleNotifications.addEventListener('click', () => {
-            notifications.classList.toggle('active');
-            toggleNotifications.innerHTML = notifications.classList.contains('active') ? '❌' : '🔔';
-        });
-
-        // Toggle theme
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            themeToggle.innerHTML = document.body.classList.contains('light-theme') ? '🌞' : '🌙';
-        });
-
-        // Add notification
-        function addNotification(message) {
-            notificationsData.push(message);
-            notificationCount++;
-            toggleNotifications.innerHTML = `🔔 (${notificationCount})`;
-            updateNotificationList();
+        // Fonction pour afficher les coordonnées
+        function showCoordinates(screenX, screenY) {
+            info.textContent = `Coordonnées écran : X=${screenX}, Y=${screenY}`;
         }
 
-        function updateNotificationList() {
-            notificationList.innerHTML = '';
-            notificationsData.forEach((msg, index) => {
-                const item = document.createElement('div');
-                item.classList.add('notification-item');
-                item.innerHTML = `${msg} <button onclick="removeNotification(${index})">❌</button>`;
-                notificationList.appendChild(item);
-            });
-        }
-
-        function removeNotification(index) {
-            notificationsData.splice(index, 1);
-            notificationCount--;
-            toggleNotifications.innerHTML = `🔔 (${notificationCount})`;
-            updateNotificationList();
-        }
-
-        // Track mouse coordinates
+        // Gestion des clics souris
         document.addEventListener('click', (event) => {
-            const x = event.pageX;
-            const y = event.pageY;
-            info.textContent = `Position du curseur : X=${x}, Y=${y}`;
-            addNotification(`Position : X=${x}, Y=${y}`);
+            const screenX = event.screenX; // Coordonnée X relative à l'écran complet
+            const screenY = event.screenY; // Coordonnée Y relative à l'écran complet
+            showCoordinates(screenX, screenY);
+            createRipple(event); // Ajout d'un effet visuel
         });
+
+        // Gestion des touchers sur mobile
+        document.addEventListener('touchstart', (event) => {
+            const touch = event.touches[0];
+            const screenX = touch.screenX; // Coordonnée X relative à l'écran complet
+            const screenY = touch.screenY; // Coordonnée Y relative à l'écran complet
+            showCoordinates(screenX, screenY);
+            createRipple(touch); // Ajout d'un effet visuel
+        });
+
+        // Fonction pour créer l'effet visuel (ripple effect)
+        function createRipple(event) {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.left = `${event.clientX}px`;
+            ripple.style.top = `${event.clientY}px`;
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600); // Supprime l'effet après animation
+        }
     </script>
 </body>
 </html>
