@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Interactif</title>
+    <title>Site Interactif Amélioré</title>
     <style>
-        /* Reset de base */
         * {
             margin: 0;
             padding: 0;
@@ -13,32 +12,15 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            background: var(--background-color);
-            color: var(--text-color);
-            transition: background 0.3s, color 0.3s;
+            justify-content: center;
             height: 100vh;
-            overflow: hidden;
-        }
-
-        :root {
-            --background-color: #141e30;
-            --text-color: white;
-            --button-color: #ff6347;
-            --button-hover: #ff4500;
-            --menu-color: rgba(255, 255, 255, 0.1);
-            --menu-hover: rgba(255, 255, 255, 0.2);
-        }
-
-        .container {
-            padding: 20px;
             text-align: center;
-            width: 100%;
         }
 
         h1 {
@@ -46,135 +28,75 @@
             margin-bottom: 20px;
         }
 
-        .button {
+        button {
+            background: #ff6f61;
+            color: #fff;
+            border: none;
             padding: 10px 20px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 30px;
-            background: var(--button-color);
-            color: white;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .button:hover {
-            background: var(--button-hover);
-        }
-
-        #notificationButton {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--button-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: background 0.3s ease;
-        }
-
-        #notificationButton:hover {
-            background: var(--button-hover);
-        }
-
-        #menu {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100%;
-            background: var(--menu-color);
-            backdrop-filter: blur(10px);
-            box-shadow: -2px 0 6px rgba(0, 0, 0, 0.3);
-            transition: right 0.4s ease;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: flex-start;
-            overflow-y: auto;
-        }
-
-        #menu.active {
-            right: 0;
-        }
-
-        .menu-item {
-            width: 100%;
-            padding: 15px 10px;
-            color: var(--text-color);
-            cursor: pointer;
             border-radius: 5px;
-            margin: 5px 0;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
             transition: background 0.3s ease;
         }
 
-        .menu-item:hover {
-            background: var(--menu-hover);
+        button:hover {
+            background: #ff483d;
         }
 
-        .mode-switch {
+        .info {
             margin-top: 10px;
+            font-size: 1.2rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Site Interactif Amélioré</h1>
-        <button class="button" id="toggleMode">Activer Mode Clair</button>
-        <p id="info">Cliquez n'importe où pour voir vos coordonnées !</p>
-    </div>
-
-    <!-- Bouton de notification -->
-    <button id="notificationButton">🔔</button>
-
-    <!-- Menu latéral -->
-    <div id="menu">
-        <h2>Options</h2>
-        <div class="menu-item">Historique des clics</div>
-        <div class="menu-item">Réglages</div>
-        <div class="menu-item mode-switch">Mode sombre/clair</div>
-    </div>
+    <h1>Notifications Actives</h1>
+    <button id="notify">Activer Notifications</button>
+    <p class="info">Cliquez sur l'écran pour enregistrer votre position.</p>
 
     <script>
-        const info = document.getElementById('info');
-        const notificationButton = document.getElementById('notificationButton');
-        const menu = document.getElementById('menu');
-        const toggleModeButton = document.getElementById('toggleMode');
+        // Enregistrement du Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker enregistré avec succès.', reg))
+                .catch(err => console.error('Erreur d\'enregistrement du Service Worker :', err));
+        }
 
-        // Mode sombre/clair
-        let darkMode = true;
+        // Gestion des notifications
+        const notifyButton = document.getElementById('notify');
 
-        toggleModeButton.addEventListener('click', () => {
-            darkMode = !darkMode;
-            if (darkMode) {
-                document.documentElement.style.setProperty('--background-color', '#141e30');
-                document.documentElement.style.setProperty('--text-color', 'white');
-                toggleModeButton.textContent = 'Activer Mode Clair';
-            } else {
-                document.documentElement.style.setProperty('--background-color', 'white');
-                document.documentElement.style.setProperty('--text-color', '#141e30');
-                toggleModeButton.textContent = 'Activer Mode Sombre';
+        notifyButton.addEventListener('click', () => {
+            if (!('Notification' in window)) {
+                alert("Les notifications ne sont pas supportées sur ce navigateur.");
+                return;
             }
+
+            // Demander la permission
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification("Notifications activées !", {
+                        body: "Vous recevrez des notifications même en arrière-plan.",
+                        icon: "https://via.placeholder.com/100"
+                    });
+                } else {
+                    alert("Notifications refusées.");
+                }
+            });
         });
 
-        // Notifications via menu
-        notificationButton.addEventListener('click', () => {
-            menu.classList.toggle('active');
-        });
-
-        // Afficher les coordonnées
+        // Écouter les clics pour enregistrer les positions
         document.addEventListener('click', (event) => {
             const x = event.pageX;
             const y = event.pageY;
-            info.textContent = `Position : X=${x}, Y=${y}`;
+            if (Notification.permission === "granted") {
+                navigator.serviceWorker.ready.then(sw => {
+                    sw.showNotification("Position enregistrée", {
+                        body: `X=${x}, Y=${y}`,
+                        icon: "https://via.placeholder.com/100"
+                    });
+                });
+            }
         });
     </script>
 </body>
