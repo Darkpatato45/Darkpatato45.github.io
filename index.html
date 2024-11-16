@@ -1,93 +1,31 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications Système</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: linear-gradient(to right, #141e30, #243b55);
-            color: white;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 5px;
-            background: #ff6347;
-            color: white;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        button:hover {
-            background: #ff4500;
-        }
-
-        #info {
-            margin-top: 20px;
-            font-size: 1.2rem;
-        }
-    </style>
+    <title>Test Notifications</title>
 </head>
 <body>
-    <h1>Notifications Système</h1>
-    <button id="enableNotifications">Activer les Notifications</button>
-    <div id="info">Cliquez n'importe où pour obtenir les coordonnées.</div>
-
+    <button id="sendNotification">Envoyer une Notification</button>
     <script>
-        const info = document.getElementById('info');
-        const enableNotificationsButton = document.getElementById('enableNotifications');
-
-        // Vérifier si les notifications sont prises en charge
-        if (!("Notification" in window)) {
-            alert("Les notifications ne sont pas prises en charge par votre navigateur.");
-            enableNotificationsButton.disabled = true;
-        }
-
-        // Demander la permission de notification
-        enableNotificationsButton.addEventListener('click', () => {
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    alert("Les notifications ont été activées !");
-                } else {
-                    alert("Vous avez refusé les notifications.");
-                }
-            });
-        });
-
-        // Fonction pour envoyer une notification
-        function sendNotification(message) {
+        document.getElementById('sendNotification').addEventListener('click', () => {
+            // Vérifiez les permissions
             if (Notification.permission === "granted") {
-                new Notification("Notification", {
-                    body: message,
-                    icon: "https://via.placeholder.com/100", // Remplacez par votre propre icône si nécessaire
+                new Notification("Test Notification", {
+                    body: "Ceci est une notification de test.",
+                    icon: "https://via.placeholder.com/100" // Ajoutez une icône personnalisée
                 });
+            } else if (Notification.permission === "default") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification("Notification activée !", {
+                            body: "Merci d'avoir activé les notifications."
+                        });
+                    } else {
+                        alert("Vous avez refusé les notifications.");
+                    }
+                });
+            } else {
+                alert("Les notifications sont bloquées dans vos paramètres.");
             }
-        }
-
-        // Écouter les clics pour afficher les coordonnées
-        document.addEventListener('click', (event) => {
-            const x = event.pageX;
-            const y = event.pageY;
-            const message = `Position : X=${x}, Y=${y}`;
-            info.textContent = message;
-
-            // Envoyer la notification
-            sendNotification(message);
         });
     </script>
 </body>
