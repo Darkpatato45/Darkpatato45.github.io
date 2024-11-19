@@ -3,61 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ajouter des contacts</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 20px;
-    }
-    textarea {
-      width: 100%;
-      height: 150px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+  <title>Générateur de Numéros</title>
 </head>
 <body>
-  <h1>Ajouter des contacts</h1>
-  <p>Entrez une liste de numéros de téléphone (un par ligne) :</p>
-  <textarea id="phoneNumbers" placeholder="Exemple :&#10;123456789&#10;987654321"></textarea>
-  <br><br>
-  <button onclick="generateContacts()">Générer fichier VCF</button>
-  <p id="result"></p>
+  <h1>Générateur de numéros commençant par 06</h1>
+  <p>Ce site génère toutes les combinaisons de numéros à 10 chiffres commençant par "06".</p>
+  <button id="generate">Générer le fichier</button>
+  <p id="status"></p>
 
   <script>
-    function generateContacts() {
-      const phoneNumbers = document.getElementById('phoneNumbers').value.trim().split('\n');
-      if (phoneNumbers.length === 0 || phoneNumbers[0] === "") {
-        document.getElementById('result').textContent = "Veuillez entrer des numéros de téléphone.";
-        return;
+    document.getElementById('generate').addEventListener('click', () => {
+      const status = document.getElementById('status');
+      status.textContent = "Génération en cours...";
+
+      // Créer les combinaisons
+      const prefix = "06";
+      const combinations = [];
+      for (let i = 0; i < 10000000; i++) {
+        const number = prefix + i.toString().padStart(8, '0');
+        combinations.push(number);
       }
 
-      let vcfContent = "BEGIN:VCARD\nVERSION:3.0\n";
-      phoneNumbers.forEach(number => {
-        vcfContent += `FN:${number}\nTEL:${number}\nEND:VCARD\nBEGIN:VCARD\nVERSION:3.0\n`;
-      });
-      vcfContent = vcfContent.trim();
-
-      const blob = new Blob([vcfContent], { type: 'text/vcard' });
+      // Créer un blob pour le fichier
+      const blob = new Blob([combinations.join('\n')], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
+
+      // Créer un lien de téléchargement
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'contacts.vcf';
-      a.textContent = "Cliquez ici pour télécharger le fichier VCF.";
-      document.getElementById('result').innerHTML = "";
-      document.getElementById('result').appendChild(a);
-    }
+      a.download = "combinations_06.txt";
+      a.textContent = "Télécharger le fichier";
+      document.body.appendChild(a);
+
+      // Mise à jour du statut
+      status.textContent = "Fichier prêt à être téléchargé !";
+    });
   </script>
 </body>
 </html>
