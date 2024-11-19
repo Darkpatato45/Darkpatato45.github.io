@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Générateur de Contacts</title>
+    <title>Générateur de Contacts 06</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,6 +14,7 @@
             background-color: #007BFF;
             color: white;
             padding: 10px 20px;
+            margin: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -21,30 +22,70 @@
         button:hover {
             background-color: #0056b3;
         }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: 250px;
+            margin: 10px;
+        }
+        .container {
+            margin: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Générateur de Numéros Commençant par 06</h1>
-    <p>Cliquez sur le bouton ci-dessous pour générer un fichier contenant des numéros de téléphone (06xxxxxxxx).</p>
-    <button onclick="generateContacts()">Générer et Télécharger</button>
+    <p>Générer une fiche contact avec des numéros commençant par 06.</p>
+    
+    <div class="container">
+        <input id="startNumber" type="number" placeholder="Numéro de départ (ex: 0600000000)" />
+        <input id="endNumber" type="number" placeholder="Numéro de fin (ex: 0600000100)" />
+    </div>
+    
+    <button onclick="generateContacts('all')">Télécharger la fiche complète</button>
+    <button onclick="generateContacts('batch', 100)">Télécharger 100 par 100</button>
+    <button onclick="generateContacts('batch', 1000)">Télécharger 1000 par 1000</button>
 
     <script>
-        function generateContacts() {
+        function generateContacts(mode, batchSize = 100) {
+            const startNumber = parseInt(document.getElementById('startNumber').value, 10);
+            const endNumber = parseInt(document.getElementById('endNumber').value, 10);
+
+            if (isNaN(startNumber) || isNaN(endNumber) || startNumber >= endNumber || String(startNumber).length !== 10 || String(endNumber).length !== 10) {
+                alert("Veuillez entrer des numéros valides (10 chiffres, le numéro de départ doit être inférieur au numéro de fin).");
+                return;
+            }
+
+            if (mode === 'all') {
+                downloadBatch(startNumber, endNumber, `${startNumber}-${endNumber}.vcf`);
+            } else if (mode === 'batch') {
+                let currentStart = startNumber;
+                let batchCount = 1;
+
+                while (currentStart <= endNumber) {
+                    const currentEnd = Math.min(currentStart + batchSize - 1, endNumber);
+                    downloadBatch(currentStart, currentEnd, `Batch-${batchCount}_${currentStart}-${currentEnd}.vcf`);
+                    currentStart += batchSize;
+                    batchCount++;
+                }
+            }
+        }
+
+        function downloadBatch(start, end, filename) {
             const vcfLines = [];
-            const numberOfContacts = 100; // Limiter pour éviter les problèmes de performance
-            
-            for (let i = 0; i < numberOfContacts; i++) {
-                const phoneNumber = "06" + Math.floor(10000000 + Math.random() * 90000000);
+
+            for (let number = start; number <= end; number++) {
+                const phoneNumber = number.toString();
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
             }
 
-            // Convertir en fichier téléchargeable
+            // Crée un fichier VCF et le télécharge
             const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = "contacts.vcf";
+            link.download = filename;
             link.click();
         }
     </script>
