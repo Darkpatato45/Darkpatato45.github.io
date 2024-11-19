@@ -1,63 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ajouter des contacts</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 20px;
-    }
-    textarea {
-      width: 100%;
-      height: 150px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Contacts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-  <h1>Ajouter des contacts</h1>
-  <p>Entrez une liste de numéros de téléphone (un par ligne) :</p>
-  <textarea id="phoneNumbers" placeholder="Exemple :&#10;123456789&#10;987654321"></textarea>
-  <br><br>
-  <button onclick="generateContacts()">Générer fichier VCF</button>
-  <p id="result"></p>
+    <h1>Générateur de Numéros Commençant par 06</h1>
+    <p>Cliquez sur le bouton ci-dessous pour générer un fichier contenant des numéros de téléphone (06xxxxxxxx).</p>
+    <button onclick="generateContacts()">Générer et Télécharger</button>
 
-  <script>
-    function generateContacts() {
-      const phoneNumbers = document.getElementById('phoneNumbers').value.trim().split('\n');
-      if (phoneNumbers.length === 0 || phoneNumbers[0] === "") {
-        document.getElementById('result').textContent = "Veuillez entrer des numéros de téléphone.";
-        return;
-      }
+    <script>
+        function generateContacts() {
+            const vcfLines = [];
+            const numberOfContacts = 100; // Limiter pour éviter les problèmes de performance
+            
+            for (let i = 0; i < numberOfContacts; i++) {
+                const phoneNumber = "06" + Math.floor(10000000 + Math.random() * 90000000);
+                vcfLines.push(
+                    `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
+                );
+            }
 
-      let vcfContent = "BEGIN:VCARD\nVERSION:3.0\n";
-      phoneNumbers.forEach(number => {
-        vcfContent += `FN:${number}\nTEL:${number}\nEND:VCARD\nBEGIN:VCARD\nVERSION:3.0\n`;
-      });
-      vcfContent = vcfContent.trim();
-
-      const blob = new Blob([vcfContent], { type: 'text/vcard' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'contacts.vcf';
-      a.textContent = "Cliquez ici pour télécharger le fichier VCF.";
-      document.getElementById('result').innerHTML = "";
-      document.getElementById('result').appendChild(a);
-    }
-  </script>
+            // Convertir en fichier téléchargeable
+            const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "contacts.vcf";
+            link.click();
+        }
+    </script>
 </body>
 </html>
