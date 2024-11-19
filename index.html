@@ -22,83 +22,46 @@
         button:hover {
             background-color: #0056b3;
         }
-        input {
-            padding: 10px;
-            font-size: 16px;
-            width: 250px;
-            margin: 10px;
-        }
-        .container {
-            margin: 20px;
-        }
     </style>
 </head>
 <body>
-    <h1>Générateur de Contacts 06</h1>
-    <p>Générer une fiche contact avec des numéros commençant par 06.</p>
-    
-    <div class="container">
-        <input id="startNumber" type="number" placeholder="Numéro de départ (ex: 0600000000)" />
-        <input id="endNumber" type="number" placeholder="Numéro de fin (ex: 0600000100)" />
-    </div>
-    
-    <button onclick="generateContacts('all')">Télécharger la fiche complète</button>
-    <button onclick="generateContacts('batch', 100)">Télécharger 100 par 100</button>
-    <button onclick="generateContacts('batch', 1000)">Télécharger 1000 par 1000</button>
+    <h1>Générateur de Tous les Contacts 06</h1>
+    <p>Cliquez sur le bouton ci-dessous pour générer un fichier contenant tous les numéros de 0600000000 à 0699999999.</p>
+    <button onclick="generateAllContacts()">Télécharger le fichier complet</button>
 
     <script>
-        function generateContacts(mode, batchSize = 100) {
-            const startNumber = parseInt(document.getElementById('startNumber').value, 10);
-            const endNumber = parseInt(document.getElementById('endNumber').value, 10);
+        function generateAllContacts() {
+            const startNumber = 600000000; // 0600000000
+            const endNumber = 699999999;  // 0699999999
 
-            // Vérification des entrées
-            if (isNaN(startNumber) || isNaN(endNumber)) {
-                alert("Veuillez entrer des numéros valides.");
-                return;
-            }
-            if (startNumber >= endNumber) {
-                alert("Le numéro de départ doit être inférieur au numéro de fin.");
-                return;
-            }
-            if (String(startNumber).length !== 10 || String(endNumber).length !== 10) {
-                alert("Les numéros doivent comporter exactement 10 chiffres.");
+            // Confirmation avant de générer un fichier aussi massif
+            if (!confirm("Attention : le fichier généré sera très lourd (plusieurs centaines de Mo). Voulez-vous continuer ?")) {
                 return;
             }
 
-            if (mode === 'all') {
-                // Génération complète d'un seul fichier
-                downloadBatch(startNumber, endNumber, `${startNumber}-${endNumber}.vcf`);
-            } else if (mode === 'batch') {
-                // Génération par lots
-                let currentStart = startNumber;
-                let batchCount = 1;
-
-                while (currentStart <= endNumber) {
-                    const currentEnd = Math.min(currentStart + batchSize - 1, endNumber);
-                    downloadBatch(currentStart, currentEnd, `Batch-${batchCount}_${currentStart}-${currentEnd}.vcf`);
-                    currentStart += batchSize;
-                    batchCount++;
-                }
-            }
-        }
-
-        function downloadBatch(start, end, filename) {
             const vcfLines = [];
-            for (let number = start; number <= end; number++) {
-                const phoneNumber = number.toString();
+            for (let number = startNumber; number <= endNumber; number++) {
+                const phoneNumber = "0" + number.toString(); // Préfixe 0
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
+
+                // Diviser le travail en blocs pour éviter de bloquer le navigateur
+                if (number % 100000 === 0) {
+                    console.log(`Progression : ${number - startNumber} numéros générés`);
+                }
             }
 
-            // Création et téléchargement du fichier VCF
+            // Création du fichier VCF
             const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = filename;
+            link.download = "Tous_les_contacts_06.vcf";
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link); // Nettoyage après téléchargement
+            document.body.removeChild(link);
+
+            alert("Téléchargement terminé !");
         }
     </script>
 </body>
