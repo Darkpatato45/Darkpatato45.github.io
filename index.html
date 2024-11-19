@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <h1>Générateur de Numéros Commençant par 06</h1>
+    <h1>Générateur de Contacts 06</h1>
     <p>Générer une fiche contact avec des numéros commençant par 06.</p>
     
     <div class="container">
@@ -51,14 +51,25 @@
             const startNumber = parseInt(document.getElementById('startNumber').value, 10);
             const endNumber = parseInt(document.getElementById('endNumber').value, 10);
 
-            if (isNaN(startNumber) || isNaN(endNumber) || startNumber >= endNumber || String(startNumber).length !== 10 || String(endNumber).length !== 10) {
-                alert("Veuillez entrer des numéros valides (10 chiffres, le numéro de départ doit être inférieur au numéro de fin).");
+            // Vérification des entrées
+            if (isNaN(startNumber) || isNaN(endNumber)) {
+                alert("Veuillez entrer des numéros valides.");
+                return;
+            }
+            if (startNumber >= endNumber) {
+                alert("Le numéro de départ doit être inférieur au numéro de fin.");
+                return;
+            }
+            if (String(startNumber).length !== 10 || String(endNumber).length !== 10) {
+                alert("Les numéros doivent comporter exactement 10 chiffres.");
                 return;
             }
 
             if (mode === 'all') {
+                // Génération complète d'un seul fichier
                 downloadBatch(startNumber, endNumber, `${startNumber}-${endNumber}.vcf`);
             } else if (mode === 'batch') {
+                // Génération par lots
                 let currentStart = startNumber;
                 let batchCount = 1;
 
@@ -73,7 +84,6 @@
 
         function downloadBatch(start, end, filename) {
             const vcfLines = [];
-
             for (let number = start; number <= end; number++) {
                 const phoneNumber = number.toString();
                 vcfLines.push(
@@ -81,12 +91,14 @@
                 );
             }
 
-            // Crée un fichier VCF et le télécharge
-            const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard" });
+            // Création et téléchargement du fichier VCF
+            const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = filename;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link); // Nettoyage après téléchargement
         }
     </script>
 </body>
