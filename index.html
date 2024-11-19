@@ -14,7 +14,7 @@
             background-color: #007BFF;
             color: white;
             padding: 10px 20px;
-            margin: 10px;
+            margin: 5px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -26,50 +26,18 @@
 </head>
 <body>
     <h1>Générateur de Contacts 06</h1>
-    <p>Cliquez sur les boutons pour télécharger chaque fichier contenant une partie des numéros de 0600000000 à 0699999999.</p>
-    <button onclick="generateContacts(1)">Télécharger fichier 1 (0600000000 - 0619999999)</button>
-    <button onclick="generateContacts(2)">Télécharger fichier 2 (0620000000 - 0639999999)</button>
-    <button onclick="generateContacts(3)">Télécharger fichier 3 (0640000000 - 0659999999)</button>
-    <button onclick="generateContacts(4)">Télécharger fichier 4 (0660000000 - 0679999999)</button>
-    <button onclick="generateContacts(5)">Télécharger fichier 5 (0680000000 - 0699999999)</button>
+    <p>Cliquez sur les boutons pour télécharger chaque fichier contenant une partie des numéros.</p>
+
+    <!-- Génération des boutons -->
+    <div id="buttons"></div>
 
     <script>
         function generateContacts(part) {
-            let startNumber, endNumber, filename;
+            const batchSize = 500000; // Nombre de numéros par fichier
+            const startNumber = 600000000 + (part - 1) * batchSize;
+            const endNumber = startNumber + batchSize - 1;
+            const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
 
-            // Définir les plages selon la partie sélectionnée
-            switch (part) {
-                case 1:
-                    startNumber = 600000000; // 0600000000
-                    endNumber = 619999999;   // 0619999999
-                    filename = "Contacts_0600-0619.vcf";
-                    break;
-                case 2:
-                    startNumber = 620000000; // 0620000000
-                    endNumber = 639999999;   // 0639999999
-                    filename = "Contacts_0620-0639.vcf";
-                    break;
-                case 3:
-                    startNumber = 640000000; // 0640000000
-                    endNumber = 659999999;   // 0659999999
-                    filename = "Contacts_0640-0659.vcf";
-                    break;
-                case 4:
-                    startNumber = 660000000; // 0660000000
-                    endNumber = 679999999;   // 0679999999
-                    filename = "Contacts_0660-0679.vcf";
-                    break;
-                case 5:
-                    startNumber = 680000000; // 0680000000
-                    endNumber = 699999999;   // 0699999999
-                    filename = "Contacts_0680-0699.vcf";
-                    break;
-                default:
-                    alert("Partie invalide !");
-                    return;
-            }
-
-            // Génération des contacts pour la plage définie
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
                 const phoneNumber = "0" + number.toString(); // Préfixe 0
@@ -94,6 +62,20 @@
 
             alert(`Téléchargement du fichier "${filename}" terminé !`);
         }
+
+        // Génération dynamique des boutons
+        function createButtons() {
+            const container = document.getElementById("buttons");
+            for (let i = 1; i <= 20; i++) {
+                const button = document.createElement("button");
+                button.textContent = `Télécharger fichier ${i}`;
+                button.onclick = () => generateContacts(i);
+                container.appendChild(button);
+            }
+        }
+
+        // Créer les boutons lors du chargement de la page
+        createButtons();
     </script>
 </body>
 </html>
