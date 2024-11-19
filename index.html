@@ -25,20 +25,51 @@
     </style>
 </head>
 <body>
-    <h1>Générateur de Tous les Contacts 06</h1>
-    <p>Cliquez sur le bouton ci-dessous pour générer un fichier contenant tous les numéros de 0600000000 à 0699999999.</p>
-    <button onclick="generateAllContacts()">Télécharger le fichier complet</button>
+    <h1>Générateur de Contacts 06</h1>
+    <p>Cliquez sur les boutons pour télécharger chaque fichier contenant une partie des numéros de 0600000000 à 0699999999.</p>
+    <button onclick="generateContacts(1)">Télécharger fichier 1 (0600000000 - 0619999999)</button>
+    <button onclick="generateContacts(2)">Télécharger fichier 2 (0620000000 - 0639999999)</button>
+    <button onclick="generateContacts(3)">Télécharger fichier 3 (0640000000 - 0659999999)</button>
+    <button onclick="generateContacts(4)">Télécharger fichier 4 (0660000000 - 0679999999)</button>
+    <button onclick="generateContacts(5)">Télécharger fichier 5 (0680000000 - 0699999999)</button>
 
     <script>
-        function generateAllContacts() {
-            const startNumber = 600000000; // 0600000000
-            const endNumber = 699999999;  // 0699999999
+        function generateContacts(part) {
+            let startNumber, endNumber, filename;
 
-            // Confirmation avant de générer un fichier aussi massif
-            if (!confirm("Attention : le fichier généré sera très lourd (plusieurs centaines de Mo). Voulez-vous continuer ?")) {
-                return;
+            // Définir les plages selon la partie sélectionnée
+            switch (part) {
+                case 1:
+                    startNumber = 600000000; // 0600000000
+                    endNumber = 619999999;   // 0619999999
+                    filename = "Contacts_0600-0619.vcf";
+                    break;
+                case 2:
+                    startNumber = 620000000; // 0620000000
+                    endNumber = 639999999;   // 0639999999
+                    filename = "Contacts_0620-0639.vcf";
+                    break;
+                case 3:
+                    startNumber = 640000000; // 0640000000
+                    endNumber = 659999999;   // 0659999999
+                    filename = "Contacts_0640-0659.vcf";
+                    break;
+                case 4:
+                    startNumber = 660000000; // 0660000000
+                    endNumber = 679999999;   // 0679999999
+                    filename = "Contacts_0660-0679.vcf";
+                    break;
+                case 5:
+                    startNumber = 680000000; // 0680000000
+                    endNumber = 699999999;   // 0699999999
+                    filename = "Contacts_0680-0699.vcf";
+                    break;
+                default:
+                    alert("Partie invalide !");
+                    return;
             }
 
+            // Génération des contacts pour la plage définie
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
                 const phoneNumber = "0" + number.toString(); // Préfixe 0
@@ -46,22 +77,22 @@
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
 
-                // Diviser le travail en blocs pour éviter de bloquer le navigateur
+                // Log de progression (optionnel)
                 if (number % 100000 === 0) {
                     console.log(`Progression : ${number - startNumber} numéros générés`);
                 }
             }
 
-            // Création du fichier VCF
+            // Création et téléchargement du fichier VCF
             const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = "Tous_les_contacts_06.vcf";
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            alert("Téléchargement terminé !");
+            alert(`Téléchargement du fichier "${filename}" terminé !`);
         }
     </script>
 </body>
