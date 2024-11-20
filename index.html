@@ -28,30 +28,27 @@
     <h1>Générateur de Contacts 06</h1>
     <p>Cliquez sur les boutons pour télécharger chaque fichier contenant une partie des numéros.</p>
 
-    <!-- Génération des boutons -->
     <div id="buttons"></div>
 
     <script>
         function generateContacts(part) {
-            const batchSize = 500000; // Nombre de numéros par fichier
+            const batchSize = 500000;
             const startNumber = 600000000 + (part - 1) * batchSize;
             const endNumber = startNumber + batchSize - 1;
             const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
 
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
-                const phoneNumber = "0" + number.toString(); // Préfixe 0
+                const phoneNumber = "0" + number.toString();
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
 
-                // Log de progression (optionnel)
                 if (number % 100000 === 0) {
                     console.log(`Progression : ${number - startNumber} numéros générés`);
                 }
             }
 
-            // Création et téléchargement du fichier VCF
             const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
@@ -63,7 +60,6 @@
             alert(`Téléchargement du fichier "${filename}" terminé !`);
         }
 
-        // Génération dynamique des boutons
         function createButtons() {
             const container = document.getElementById("buttons");
             for (let i = 1; i <= 20; i++) {
@@ -74,7 +70,6 @@
             }
         }
 
-        // Créer les boutons lors du chargement de la page
         createButtons();
     </script>
 </body>
