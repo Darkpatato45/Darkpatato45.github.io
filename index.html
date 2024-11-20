@@ -135,13 +135,13 @@
 
         function createGroupButtons() {
             const container = document.getElementById("group-buttons");
-            for (let i = 1; i <= 12; i++) {
+            for (let i = 1; i <= 48; i++) {
                 const button = document.createElement("button");
-                button.textContent = `Télécharger fichiers ${i * 100 - 99} à ${i * 100}`;
+                button.textContent = `Télécharger fichiers ${i * 25 - 24} à ${i * 25}`;
                 button.onclick = async () => {
                     const zip = new JSZip();
-                    const startFile = (i - 1) * 100 + 1;
-                    const endFile = i * 100;
+                    const startFile = (i - 1) * 25 + 1;
+                    const endFile = i * 25;
 
                     for (let j = startFile; j <= endFile; j++) {
                         const startNumber = 600000000 + (j - 1) * 500000;
