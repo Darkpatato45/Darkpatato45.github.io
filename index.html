@@ -5,73 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Contacts 06</title>
     <style>
-        /* Styles généraux */
+        /* Importation de la police */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
+        /* Styles globaux */
         body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(to right, #4e54c8, #8f94fb);
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #1d1f21, #32353b);
+            color: #ffffff;
             margin: 0;
             padding: 0;
-            color: #ffffff;
+        }
+
+        /* Conteneur central */
+        .container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
             text-align: center;
         }
 
-        /* Conteneur principal */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
+        /* Titre principal */
         h1 {
             font-size: 3rem;
-            margin-bottom: 10px;
-            color: #ffffff;
-            text-shadow: 2px 4px 6px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-shadow: 0px 4px 10px rgba(0, 212, 255, 0.5);
         }
 
+        /* Texte secondaire */
         p {
             font-size: 1.2rem;
-            margin-bottom: 30px;
-            color: #e0e0e0;
+            color: #b0bec5;
+            margin-bottom: 40px;
         }
 
         /* Conteneur des boutons */
         #buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            justify-content: center;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
         }
 
         /* Style des boutons */
         button {
-            background: linear-gradient(135deg, #4caf50, #81c784);
+            background: linear-gradient(135deg, #007bff, #3a82f6);
             color: #ffffff;
             padding: 15px 20px;
             font-size: 1rem;
-            font-weight: bold;
+            font-weight: 600;
             text-transform: uppercase;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0px 8px 15px rgba(0, 123, 255, 0.3);
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         button:hover {
-            background: linear-gradient(135deg, #388e3c, #66bb6a);
-            transform: scale(1.05);
-            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #0056b3, #1c74d1);
+            box-shadow: 0px 12px 20px rgba(0, 123, 255, 0.5);
+            transform: translateY(-5px);
         }
 
         button:active {
-            transform: scale(0.95);
+            transform: translateY(0);
+            box-shadow: 0px 8px 15px rgba(0, 123, 255, 0.3);
         }
 
-        /* Responsive */
+        /* Responsive design */
         @media (max-width: 768px) {
             h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
 
             p {
@@ -88,7 +95,7 @@
 <body>
     <div class="container">
         <h1>Générateur de Contacts 06</h1>
-        <p>Cliquez sur un bouton pour télécharger un fichier contenant une partie des numéros.</p>
+        <p>Cliquez sur un bouton pour télécharger une liste de contacts.</p>
 
         <div id="buttons"></div>
     </div>
@@ -106,10 +113,6 @@
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
-
-                if (number % 100000 === 0) {
-                    console.log(`Progression : ${number - startNumber} numéros générés`);
-                }
             }
 
             const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard;charset=utf-8" });
