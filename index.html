@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Contacts 06</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
 
@@ -16,7 +17,6 @@
             padding: 0;
         }
 
-        /* Conteneur principal */
         .container {
             max-width: 1200px;
             margin: 50px auto;
@@ -24,7 +24,6 @@
             text-align: center;
         }
 
-        /* Titre principal */
         h1 {
             font-size: 3.2rem;
             font-weight: 600;
@@ -33,27 +32,18 @@
             text-shadow: 0px 4px 10px rgba(0, 212, 255, 0.5);
         }
 
-        /* Texte secondaire */
         p {
             font-size: 1.2rem;
             color: #b0bec5;
             margin-bottom: 30px;
         }
 
-        /* Boutons section */
-        .button-section {
-            margin-bottom: 40px;
-        }
-
-        /* Conteneur des boutons */
         #buttons {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
-            justify-content: center;
         }
 
-        /* Style des boutons */
         button {
             background: linear-gradient(135deg, #00bcd4, #1de9b6);
             color: #ffffff;
@@ -80,7 +70,6 @@
             box-shadow: 0px 8px 15px rgba(0, 188, 212, 0.3);
         }
 
-        /* Bouton global */
         .download-all {
             margin-top: 40px;
             padding: 15px 30px;
@@ -100,7 +89,6 @@
             box-shadow: 0px 8px 15px rgba(255, 82, 82, 0.3);
         }
 
-        /* Responsive design */
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -125,22 +113,15 @@
 <body>
     <div class="container">
         <h1>Générateur de Contacts 06</h1>
-        <p>Cliquez sur un bouton pour télécharger une liste de contacts ou téléchargez tout d’un seul clic.</p>
+        <p>Cliquez sur un bouton pour télécharger une liste ou regroupez tout dans un fichier ZIP.</p>
 
-        <!-- Boutons section -->
-        <div id="buttons" class="button-section"></div>
+        <div id="buttons"></div>
 
-        <!-- Bouton pour tout télécharger -->
-        <button class="download-all" onclick="downloadAll()">Télécharger tous les fichiers</button>
+        <button class="download-all" onclick="downloadAllInZip()">Télécharger tout en ZIP</button>
     </div>
 
     <script>
-        function generateContacts(part) {
-            const batchSize = 500000;
-            const startNumber = 600000000 + (part - 1) * batchSize;
-            const endNumber = startNumber + batchSize - 1;
-            const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-
+        function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
                 const phoneNumber = "0" + number.toString();
@@ -148,14 +129,7 @@
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
             }
-
-            const blob = new Blob([vcfLines.join("\n")], { type: "text/vcard;charset=utf-8" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            return vcfLines.join("\n");
         }
 
         function createButtons() {
@@ -163,18 +137,46 @@
             for (let i = 1; i <= 1200; i++) {
                 const button = document.createElement("button");
                 button.textContent = `Fichier ${i}`;
-                button.onclick = () => generateContacts(i);
+                button.onclick = () => {
+                    const startNumber = 600000000 + (i - 1) * 500000;
+                    const endNumber = startNumber + 499999;
+                    const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                    const content = generateVcfContent(startNumber, endNumber);
+
+                    const blob = new Blob([content], { type: "text/vcard;charset=utf-8" });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
                 container.appendChild(button);
             }
         }
 
-        async function downloadAll() {
+        async function downloadAllInZip() {
+            const zip = new JSZip();
             for (let i = 1; i <= 1200; i++) {
-                generateContacts(i);
-                // Petite pause pour éviter une surcharge
-                await new Promise(resolve => setTimeout(resolve, 50));
+                const startNumber = 600000000 + (i - 1) * 500000;
+                const endNumber = startNumber + 499999;
+                const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                const content = generateVcfContent(startNumber, endNumber);
+
+                zip.file(filename, content);
+                await new Promise(resolve => setTimeout(resolve, 50)); // Ajout d'une pause pour éviter les blocages
             }
-            alert("Téléchargement de tous les fichiers terminé !");
+
+            zip.generateAsync({ type: "blob" }).then(content => {
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(content);
+                link.download = "Contacts_06_Tous_Fichiers.zip";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            alert("Le fichier ZIP contenant tous les contacts est prêt !");
         }
 
         createButtons();
