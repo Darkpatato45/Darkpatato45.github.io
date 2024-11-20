@@ -38,10 +38,12 @@
             margin-bottom: 30px;
         }
 
-        #buttons {
+        #buttons,
+        #group-buttons {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
+            margin-bottom: 30px;
         }
 
         button {
@@ -70,25 +72,6 @@
             box-shadow: 0px 8px 15px rgba(0, 188, 212, 0.3);
         }
 
-        .download-all {
-            margin-top: 40px;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background: linear-gradient(135deg, #ff5252, #ff1744);
-            box-shadow: 0px 8px 15px rgba(255, 82, 82, 0.3);
-        }
-
-        .download-all:hover {
-            background: linear-gradient(135deg, #e53935, #d32f2f);
-            box-shadow: 0px 12px 20px rgba(255, 82, 82, 0.5);
-            transform: translateY(-5px);
-        }
-
-        .download-all:active {
-            transform: translateY(0);
-            box-shadow: 0px 8px 15px rgba(255, 82, 82, 0.3);
-        }
-
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -102,22 +85,17 @@
                 font-size: 0.9rem;
                 padding: 10px 15px;
             }
-
-            .download-all {
-                font-size: 1rem;
-                padding: 10px 20px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Générateur de Contacts 06</h1>
-        <p>Cliquez sur un bouton pour télécharger une liste ou regroupez tout dans un fichier ZIP.</p>
+        <p>Cliquez sur un bouton pour télécharger un fichier ou des groupes de fichiers.</p>
 
+        <div id="group-buttons"></div>
+        <p>Boutons pour télécharger les fichiers un par un :</p>
         <div id="buttons"></div>
-
-        <button class="download-all" onclick="downloadAllInZip()">Télécharger tout en ZIP</button>
     </div>
 
     <script>
@@ -132,7 +110,7 @@
             return vcfLines.join("\n");
         }
 
-        function createButtons() {
+        function createIndividualButtons() {
             const container = document.getElementById("buttons");
             for (let i = 1; i <= 1200; i++) {
                 const button = document.createElement("button");
@@ -155,31 +133,44 @@
             }
         }
 
-        async function downloadAllInZip() {
-            const zip = new JSZip();
-            for (let i = 1; i <= 1200; i++) {
-                const startNumber = 600000000 + (i - 1) * 500000;
-                const endNumber = startNumber + 499999;
-                const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-                const content = generateVcfContent(startNumber, endNumber);
+        function createGroupButtons() {
+            const container = document.getElementById("group-buttons");
+            for (let i = 1; i <= 12; i++) {
+                const button = document.createElement("button");
+                button.textContent = `Télécharger fichiers ${i * 100 - 99} à ${i * 100}`;
+                button.onclick = async () => {
+                    const zip = new JSZip();
+                    const startFile = (i - 1) * 100 + 1;
+                    const endFile = i * 100;
 
-                zip.file(filename, content);
-                await new Promise(resolve => setTimeout(resolve, 50)); // Ajout d'une pause pour éviter les blocages
+                    for (let j = startFile; j <= endFile; j++) {
+                        const startNumber = 600000000 + (j - 1) * 500000;
+                        const endNumber = startNumber + 499999;
+                        const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                        const content = generateVcfContent(startNumber, endNumber);
+
+                        zip.file(filename, content);
+                        await new Promise(resolve => setTimeout(resolve, 50)); // Pause légère pour éviter les blocages
+                    }
+
+                    zip.generateAsync({ type: "blob" }).then(content => {
+                        const zipFilename = `Contacts_06_Fichiers_${startFile}-${endFile}.zip`;
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(content);
+                        link.download = zipFilename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+
+                    alert(`Le fichier ZIP contenant les fichiers ${startFile} à ${endFile} est prêt !`);
+                };
+                container.appendChild(button);
             }
-
-            zip.generateAsync({ type: "blob" }).then(content => {
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(content);
-                link.download = "Contacts_06_Tous_Fichiers.zip";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-
-            alert("Le fichier ZIP contenant tous les contacts est prêt !");
         }
 
-        createButtons();
+        createGroupButtons();
+        createIndividualButtons();
     </script>
 </body>
 </html>
