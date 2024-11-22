@@ -70,10 +70,13 @@
     </div>
 
     <script>
-        const totalFiles = 200;
+        const totalFiles = 200;  // Total des fichiers à générer
+        const batchSize = 10;    // Nombre de fichiers à traiter à la fois
         let currentFileIndex = 0;
-        const zip = new JSZip(); // Créer un seul fichier ZIP
+        const zip = new JSZip(); // Créer un fichier ZIP
+        let fileCount = 0;
 
+        // Fonction pour générer le contenu d'un fichier VCF
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
@@ -85,23 +88,23 @@
             return vcfLines.join("\n");
         }
 
-        // Fonction principale pour la création des fichiers VCF
-        async function createFiles() {
+        // Fonction pour gérer la mise à jour de la barre de progression
+        function updateProgressBar() {
+            const progress = (fileCount / totalFiles) * 100;
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
-            let fileCount = 0;
+            progressBar.style.width = progress + '%';
+            statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Fichier ${fileCount} sur ${totalFiles}`;
+        }
 
-            // Fonction pour calculer et mettre à jour le temps restant
-            function updateProgressBar() {
-                const progress = (fileCount / totalFiles) * 100;
-                progressBar.style.width = progress + '%';
-                statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Fichier ${fileCount} sur ${totalFiles}`;
-            }
-
-            // Fonction pour traiter chaque fichier
-            async function processFile() {
+        // Fonction principale pour créer les fichiers
+        async function createFiles() {
+            const statusText = document.getElementById('status');
+            
+            // Fonction pour traiter un lot de fichiers
+            async function processBatch() {
                 if (currentFileIndex >= totalFiles) {
-                    // Tous les fichiers sont créés, signaler la fin du processus
+                    // Tous les fichiers sont générés, créer le ZIP et permettre le téléchargement
                     statusText.textContent = "Tous les fichiers ont été créés ! Téléchargement en cours...";
                     try {
                         const zipContent = await zip.generateAsync({ type: "blob" });
@@ -117,36 +120,38 @@
                     return;
                 }
 
-                const startNumber = 600000000 + (currentFileIndex) * 500000;
-                const endNumber = startNumber + 499999;
-                const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-                const content = generateVcfContent(startNumber, endNumber);
+                // Traiter les fichiers par lot
+                for (let i = 0; i < batchSize && currentFileIndex < totalFiles; i++) {
+                    const startNumber = 600000000 + (currentFileIndex) * 500000;
+                    const endNumber = startNumber + 499999;
+                    const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                    const content = generateVcfContent(startNumber, endNumber);
 
-                try {
-                    // Ajouter le fichier VCF au ZIP
-                    zip.file(filename, content);
+                    try {
+                        // Ajouter chaque fichier au ZIP
+                        zip.file(filename, content);
+                        console.log(`Ajout du fichier: ${filename}`);
+                    } catch (error) {
+                        console.error(`Erreur lors de l'ajout du fichier ${filename}:`, error);
+                    }
 
-                    // Mettre à jour la barre de progression
                     fileCount++;
                     updateProgressBar();
-                } catch (error) {
-                    console.error("Erreur lors de l'ajout du fichier au ZIP :", error);
+                    currentFileIndex++;
+
+                    // Limiter les ressources utilisées en ajoutant une petite pause
+                    await new Promise(resolve => setTimeout(resolve, 200));
                 }
 
-                // Attendre un peu avant de créer le fichier suivant (pour éviter de saturer le navigateur)
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                currentFileIndex++;
-
-                // Appeler récursivement pour créer le fichier suivant
-                processFile();
+                // Appeler à nouveau pour traiter le lot suivant
+                processBatch();
             }
 
-            // Démarrer la création des fichiers
-            processFile();
+            // Démarrer la création des fichiers par lot
+            processBatch();
         }
 
-        // Lancer la création des fichiers au chargement de la page
+        // Lancer la création des fichiers dès que la page est prête
         window.onload = () => {
             createFiles();
         };
