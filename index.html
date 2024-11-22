@@ -72,8 +72,7 @@
     <script>
         const totalFiles = 200;
         let currentFileIndex = 0;
-        const batchSize = 1; // Création d'un fichier à la fois
-        let lastUpdateTime = Date.now(); // Temps de la dernière mise à jour
+        const zip = new JSZip(); // Créer un seul fichier ZIP
 
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
@@ -90,9 +89,7 @@
         async function createFiles() {
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
-            const startTime = Date.now(); // Temps de départ pour le calcul du temps restant
             let fileCount = 0;
-            const zip = new JSZip();
 
             // Fonction pour calculer et mettre à jour le temps restant
             function updateProgressBar() {
@@ -106,13 +103,17 @@
                 if (currentFileIndex >= totalFiles) {
                     // Tous les fichiers sont créés, signaler la fin du processus
                     statusText.textContent = "Tous les fichiers ont été créés ! Téléchargement en cours...";
-                    const zipContent = await zip.generateAsync({ type: "blob" });
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(zipContent);
-                    link.download = "Contacts_06.zip";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    try {
+                        const zipContent = await zip.generateAsync({ type: "blob" });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(zipContent);
+                        link.download = "Contacts_06.zip";
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } catch (error) {
+                        console.error("Erreur lors de la création du fichier ZIP :", error);
+                    }
                     return;
                 }
 
@@ -121,15 +122,19 @@
                 const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
                 const content = generateVcfContent(startNumber, endNumber);
 
-                // Ajouter le fichier VCF au ZIP
-                zip.file(filename, content);
+                try {
+                    // Ajouter le fichier VCF au ZIP
+                    zip.file(filename, content);
 
-                // Mettre à jour la barre de progression
-                fileCount++;
-                updateProgressBar();
+                    // Mettre à jour la barre de progression
+                    fileCount++;
+                    updateProgressBar();
+                } catch (error) {
+                    console.error("Erreur lors de l'ajout du fichier au ZIP :", error);
+                }
 
                 // Attendre un peu avant de créer le fichier suivant (pour éviter de saturer le navigateur)
-                await new Promise(resolve => setTimeout(resolve, 200));
+                await new Promise(resolve => setTimeout(resolve, 100));
 
                 currentFileIndex++;
 
