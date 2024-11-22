@@ -54,6 +54,12 @@
             border-radius: 5px;
         }
 
+        #status {
+            font-size: 1rem;
+            color: #b0bec5;
+            margin-top: 15px;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -74,6 +80,10 @@
     </div>
 
     <script>
+        const totalFiles = 1200;
+        const batchSize = 50; // Nombre de fichiers à créer dans chaque lot
+        let currentFileIndex = 0;
+
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
@@ -86,29 +96,49 @@
         }
 
         async function createFiles() {
-            const totalFiles = 1200;
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
-
             const zip = new JSZip();
+            const startTime = Date.now(); // Temps de début pour calculer l'estimation
             let fileCount = 0;
 
-            for (let i = 1; i <= totalFiles; i++) {
-                const startNumber = 600000000 + (i - 1) * 500000;
-                const endNumber = startNumber + 499999;
-                const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-                const content = generateVcfContent(startNumber, endNumber);
+            while (currentFileIndex < totalFiles) {
+                const batchEnd = Math.min(currentFileIndex + batchSize, totalFiles);
+                for (let i = currentFileIndex + 1; i <= batchEnd; i++) {
+                    const startNumber = 600000000 + (i - 1) * 500000;
+                    const endNumber = startNumber + 499999;
+                    const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                    const content = generateVcfContent(startNumber, endNumber);
 
-                zip.file(filename, content);
-                fileCount++;
+                    zip.file(filename, content);
+                    fileCount++;
 
-                // Mise à jour de la barre de progression
-                const progress = (fileCount / totalFiles) * 100;
-                progressBar.style.width = progress + '%';
-                statusText.textContent = `Création des fichiers... ${Math.round(progress)}%`;
+                    // Mise à jour de la barre de progression
+                    const progress = (fileCount / totalFiles) * 100;
+                    progressBar.style.width = progress + '%';
 
-                // Délai pour simuler la création des fichiers
-                await new Promise(resolve => setTimeout(resolve, 50));
+                    // Calcul du temps restant estimé
+                    const elapsedTime = (Date.now() - startTime) / 1000; // Temps écoulé en secondes
+                    const filesProcessedPerSecond = fileCount / elapsedTime; // Fichiers traités par seconde
+                    const remainingFiles = totalFiles - fileCount;
+                    const remainingTime = remainingFiles / filesProcessedPerSecond; // Temps restant en secondes
+                    const remainingMinutes = Math.floor(remainingTime / 60);
+                    const remainingSeconds = Math.round(remainingTime % 60);
+
+                    // Mise à jour du statut avec le temps restant estimé
+                    statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Temps restant: ${remainingMinutes}m ${remainingSeconds}s`;
+
+                    // Pause pour éviter de trop solliciter le navigateur
+                    await new Promise(resolve => setTimeout(resolve, 100)); // 100ms entre chaque fichier
+                }
+
+                // Passer au lot suivant
+                currentFileIndex = batchEnd;
+
+                // Pour éviter le blocage de l'UI, on met à jour la barre de progression régulièrement
+                if (currentFileIndex < totalFiles) {
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Attente d'une seconde avant le prochain lot
+                }
             }
 
             // Une fois tous les fichiers créés, générer le fichier zip
