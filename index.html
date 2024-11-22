@@ -81,8 +81,9 @@
 
     <script>
         const totalFiles = 1200;
-        const batchSize = 50; // Nombre de fichiers à créer dans chaque lot
         let currentFileIndex = 0;
+        const batchSize = 30; // Traitement par lot de 30 fichiers (modifiable)
+        let lastUpdateTime = Date.now(); // Temps de la dernière mise à jour
 
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
@@ -95,14 +96,36 @@
             return vcfLines.join("\n");
         }
 
+        // Fonction principale pour la création des fichiers VCF
         async function createFiles() {
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
             const zip = new JSZip();
-            const startTime = Date.now(); // Temps de début pour calculer l'estimation
+            const startTime = Date.now(); // Temps de départ pour le calcul du temps restant
             let fileCount = 0;
+            let lastFileCount = 0;
+            let lastTime = startTime;
 
-            while (currentFileIndex < totalFiles) {
+            // Fonction pour calculer et mettre à jour le temps restant
+            function updateProgressBar() {
+                const elapsedTime = (Date.now() - startTime) / 1000; // Temps écoulé en secondes
+                const progress = (fileCount / totalFiles) * 100;
+                progressBar.style.width = progress + '%';
+
+                // Calcul du temps restant estimé
+                const elapsedSinceLastUpdate = (Date.now() - lastUpdateTime) / 1000; // En secondes
+                const filesProcessedSinceLastUpdate = fileCount - lastFileCount;
+                const filesPerSecond = filesProcessedSinceLastUpdate / elapsedSinceLastUpdate;
+                const remainingFiles = totalFiles - fileCount;
+                const remainingTime = remainingFiles / filesPerSecond;
+
+                const remainingMinutes = Math.floor(remainingTime / 60);
+                const remainingSeconds = Math.round(remainingTime % 60);
+                statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Temps restant: ${remainingMinutes}m ${remainingSeconds}s`;
+            }
+
+            // Fonction pour traiter un lot de fichiers
+            async function processBatch() {
                 const batchEnd = Math.min(currentFileIndex + batchSize, totalFiles);
                 for (let i = currentFileIndex + 1; i <= batchEnd; i++) {
                     const startNumber = 600000000 + (i - 1) * 500000;
@@ -113,46 +136,39 @@
                     zip.file(filename, content);
                     fileCount++;
 
-                    // Mise à jour de la barre de progression
-                    const progress = (fileCount / totalFiles) * 100;
-                    progressBar.style.width = progress + '%';
+                    // Mettre à jour la progression
+                    updateProgressBar();
 
-                    // Calcul du temps restant estimé
-                    const elapsedTime = (Date.now() - startTime) / 1000; // Temps écoulé en secondes
-                    const filesProcessedPerSecond = fileCount / elapsedTime; // Fichiers traités par seconde
-                    const remainingFiles = totalFiles - fileCount;
-                    const remainingTime = remainingFiles / filesProcessedPerSecond; // Temps restant en secondes
-                    const remainingMinutes = Math.floor(remainingTime / 60);
-                    const remainingSeconds = Math.round(remainingTime % 60);
-
-                    // Mise à jour du statut avec le temps restant estimé
-                    statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Temps restant: ${remainingMinutes}m ${remainingSeconds}s`;
-
-                    // Pause pour éviter de trop solliciter le navigateur
-                    await new Promise(resolve => setTimeout(resolve, 100)); // 100ms entre chaque fichier
+                    // Si beaucoup de fichiers sont traités rapidement, donner un peu de temps au navigateur
+                    if (Date.now() - lastUpdateTime > 200) {
+                        lastUpdateTime = Date.now();
+                        await new Promise(resolve => setTimeout(resolve, 100)); // 100ms entre les fichiers
+                    }
                 }
 
-                // Passer au lot suivant
+                // Mettre à jour l'index de fichier pour le prochain lot
                 currentFileIndex = batchEnd;
 
-                // Pour éviter le blocage de l'UI, on met à jour la barre de progression régulièrement
+                // Si tous les fichiers ne sont pas encore créés, traiter un autre lot
                 if (currentFileIndex < totalFiles) {
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Attente d'une seconde avant le prochain lot
+                    requestIdleCallback(processBatch); // Appel pour traiter le lot suivant quand le navigateur est inactif
+                } else {
+                    zip.generateAsync({ type: "blob" }).then(content => {
+                        const zipFilename = `Contacts_06_Fichiers_1-${totalFiles}.zip`;
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(content);
+                        link.download = zipFilename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        statusText.textContent = "Fichiers créés et téléchargement lancé!";
+                    });
                 }
             }
 
-            // Une fois tous les fichiers créés, générer le fichier zip
-            zip.generateAsync({ type: "blob" }).then(content => {
-                const zipFilename = `Contacts_06_Fichiers_1-${totalFiles}.zip`;
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(content);
-                link.download = zipFilename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                statusText.textContent = "Fichiers créés et téléchargement lancé!";
-            });
+            // Démarrer la création des fichiers
+            requestIdleCallback(processBatch); // Utilisation de requestIdleCallback pour éviter de bloquer l'UI
         }
 
         // Lancer la création des fichiers au chargement de la page
