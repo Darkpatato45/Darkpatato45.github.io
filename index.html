@@ -7,8 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
-
-        /* Styles globaux */
         body {
             font-family: 'Montserrat', sans-serif;
             background: linear-gradient(135deg, #141e30, #243b55);
@@ -16,14 +14,12 @@
             margin: 0;
             padding: 0;
         }
-
         .container {
             max-width: 1200px;
             margin: 50px auto;
             padding: 20px;
             text-align: center;
         }
-
         h1 {
             font-size: 3.2rem;
             font-weight: 600;
@@ -31,13 +27,11 @@
             margin-bottom: 10px;
             text-shadow: 0px 4px 10px rgba(0, 212, 255, 0.5);
         }
-
         p {
             font-size: 1.2rem;
             color: #b0bec5;
             margin-bottom: 30px;
         }
-
         #progress-bar {
             width: 100%;
             height: 20px;
@@ -45,7 +39,6 @@
             border-radius: 5px;
             margin-top: 20px;
         }
-
         #progress-bar span {
             display: block;
             height: 100%;
@@ -53,18 +46,15 @@
             width: 0;
             border-radius: 5px;
         }
-
         #status {
             font-size: 1rem;
             color: #b0bec5;
             margin-top: 15px;
         }
-
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
             }
-
             p {
                 font-size: 1rem;
             }
@@ -102,8 +92,7 @@
             const statusText = document.getElementById('status');
             const startTime = Date.now(); // Temps de départ pour le calcul du temps restant
             let fileCount = 0;
-            let lastFileCount = 0;
-            let lastTime = startTime;
+            const zip = new JSZip();
 
             // Fonction pour calculer et mettre à jour le temps restant
             function updateProgressBar() {
@@ -117,6 +106,13 @@
                 if (currentFileIndex >= totalFiles) {
                     // Tous les fichiers sont créés, signaler la fin du processus
                     statusText.textContent = "Tous les fichiers ont été créés ! Téléchargement en cours...";
+                    const zipContent = await zip.generateAsync({ type: "blob" });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(zipContent);
+                    link.download = "Contacts_06.zip";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                     return;
                 }
 
@@ -125,19 +121,10 @@
                 const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
                 const content = generateVcfContent(startNumber, endNumber);
 
-                // Créer un fichier ZIP
-                const zip = new JSZip();
+                // Ajouter le fichier VCF au ZIP
                 zip.file(filename, content);
-                
-                const zipContent = await zip.generateAsync({ type: "blob" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(zipContent);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
 
-                // Mettre à jour la barre de progression et l'état
+                // Mettre à jour la barre de progression
                 fileCount++;
                 updateProgressBar();
 
