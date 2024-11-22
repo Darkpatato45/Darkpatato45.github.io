@@ -82,7 +82,7 @@
     <script>
         const totalFiles = 1200;
         let currentFileIndex = 0;
-        const batchSize = 30; // Traitement par lot de 30 fichiers (modifiable)
+        const batchSize = 1; // Création d'un fichier à la fois
         let lastUpdateTime = Date.now(); // Temps de la dernière mise à jour
 
         function generateVcfContent(startNumber, endNumber) {
@@ -100,7 +100,6 @@
         async function createFiles() {
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
-            const zip = new JSZip();
             const startTime = Date.now(); // Temps de départ pour le calcul du temps restant
             let fileCount = 0;
             let lastFileCount = 0;
@@ -108,67 +107,51 @@
 
             // Fonction pour calculer et mettre à jour le temps restant
             function updateProgressBar() {
-                const elapsedTime = (Date.now() - startTime) / 1000; // Temps écoulé en secondes
                 const progress = (fileCount / totalFiles) * 100;
                 progressBar.style.width = progress + '%';
-
-                // Calcul du temps restant estimé
-                const elapsedSinceLastUpdate = (Date.now() - lastUpdateTime) / 1000; // En secondes
-                const filesProcessedSinceLastUpdate = fileCount - lastFileCount;
-                const filesPerSecond = filesProcessedSinceLastUpdate / elapsedSinceLastUpdate;
-                const remainingFiles = totalFiles - fileCount;
-                const remainingTime = remainingFiles / filesPerSecond;
-
-                const remainingMinutes = Math.floor(remainingTime / 60);
-                const remainingSeconds = Math.round(remainingTime % 60);
-                statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Temps restant: ${remainingMinutes}m ${remainingSeconds}s`;
+                statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Fichier ${fileCount} sur ${totalFiles}`;
             }
 
-            // Fonction pour traiter un lot de fichiers
-            async function processBatch() {
-                const batchEnd = Math.min(currentFileIndex + batchSize, totalFiles);
-                for (let i = currentFileIndex + 1; i <= batchEnd; i++) {
-                    const startNumber = 600000000 + (i - 1) * 500000;
-                    const endNumber = startNumber + 499999;
-                    const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-                    const content = generateVcfContent(startNumber, endNumber);
-
-                    zip.file(filename, content);
-                    fileCount++;
-
-                    // Mettre à jour la progression
-                    updateProgressBar();
-
-                    // Si beaucoup de fichiers sont traités rapidement, donner un peu de temps au navigateur
-                    if (Date.now() - lastUpdateTime > 200) {
-                        lastUpdateTime = Date.now();
-                        await new Promise(resolve => setTimeout(resolve, 100)); // 100ms entre les fichiers
-                    }
+            // Fonction pour traiter chaque fichier
+            async function processFile() {
+                if (currentFileIndex >= totalFiles) {
+                    // Tous les fichiers sont créés, signaler la fin du processus
+                    statusText.textContent = "Tous les fichiers ont été créés ! Téléchargement en cours...";
+                    return;
                 }
 
-                // Mettre à jour l'index de fichier pour le prochain lot
-                currentFileIndex = batchEnd;
+                const startNumber = 600000000 + (currentFileIndex) * 500000;
+                const endNumber = startNumber + 499999;
+                const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                const content = generateVcfContent(startNumber, endNumber);
 
-                // Si tous les fichiers ne sont pas encore créés, traiter un autre lot
-                if (currentFileIndex < totalFiles) {
-                    requestIdleCallback(processBatch); // Appel pour traiter le lot suivant quand le navigateur est inactif
-                } else {
-                    zip.generateAsync({ type: "blob" }).then(content => {
-                        const zipFilename = `Contacts_06_Fichiers_1-${totalFiles}.zip`;
-                        const link = document.createElement("a");
-                        link.href = URL.createObjectURL(content);
-                        link.download = zipFilename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
+                // Créer un fichier ZIP
+                const zip = new JSZip();
+                zip.file(filename, content);
+                
+                const zipContent = await zip.generateAsync({ type: "blob" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(zipContent);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-                        statusText.textContent = "Fichiers créés et téléchargement lancé!";
-                    });
-                }
+                // Mettre à jour la barre de progression et l'état
+                fileCount++;
+                updateProgressBar();
+
+                // Attendre un peu avant de créer le fichier suivant (pour éviter de saturer le navigateur)
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                currentFileIndex++;
+
+                // Appeler récursivement pour créer le fichier suivant
+                processFile();
             }
 
             // Démarrer la création des fichiers
-            requestIdleCallback(processBatch); // Utilisation de requestIdleCallback pour éviter de bloquer l'UI
+            processFile();
         }
 
         // Lancer la création des fichiers au chargement de la page
