@@ -82,11 +82,15 @@
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
-                // Convertir l'indice de génération en hexadécimal
-                const generationHex = (number - startNumber + 1).toString(16).toUpperCase();  // Conversion en hexadécimal
-                const phoneNumber = "6" + String(number).padStart(8, '0');  // Enlever le zéro avant le 6
+                // Extraire la partie numérique du numéro de téléphone après le 06
+                const phoneNumber = String(number).padStart(8, '0');
+                const contactNumber = parseInt(phoneNumber);  // Convertir en nombre entier
+
+                // Convertir le numéro en hexadécimal
+                const generationHex = contactNumber.toString(16).toUpperCase(); // Convertir en hexadécimal
+
                 vcfLines.push(
-                    `BEGIN:VCARD\nVERSION:3.0\nFN:${generationHex}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
+                    `BEGIN:VCARD\nVERSION:3.0\nFN:${generationHex}\nTEL;TYPE=CELL:6${phoneNumber}\nEND:VCARD`
                 );
             }
             return vcfLines.join("\n");
