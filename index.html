@@ -82,11 +82,11 @@
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
-                // Utiliser simplement l'indice de génération comme nom du contact
-                const generation = number - startNumber + 1;  // Calculer la génération (1, 2, 3, ...)
-                const phoneNumber = "06" + String(number).padStart(8, '0'); 
+                // Utiliser simplement l'indice de génération comme nom du contact, en hexadécimal
+                const generationHex = (number - startNumber + 1).toString(16);  // Calculer la génération en hexadécimal
+                const phoneNumber = "6" + String(number).padStart(8, '0');  // Enlever le zéro avant le 6
                 vcfLines.push(
-                    `BEGIN:VCARD\nVERSION:3.0\nFN:${generation}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
+                    `BEGIN:VCARD\nVERSION:3.0\nFN:${generationHex}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
             }
             return vcfLines.join("\n");
