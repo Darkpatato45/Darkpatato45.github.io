@@ -64,17 +64,18 @@
 <body>
     <div class="container">
         <h1>Générateur de Contacts 06</h1>
-        <p>Les fichiers sont en cours de création...</p>
-        <div id="progress-bar"><span></span></div>
         <p id="status">Chargement en cours...</p>
+        <div id="progress-bar"><span></span></div>
+        <p id="time-remaining">Temps restant estimé: --</p>
     </div>
 
     <script>
         const totalFiles = 200;  // Total des fichiers à générer
-        const batchSize = 10;    // Nombre de fichiers à traiter à la fois
+        const batchSize = 1;     // Nombre de fichiers à traiter à la fois (1 fichier par téléchargement)
         let currentFileIndex = 0;
-        const zip = new JSZip(); // Créer un fichier ZIP
         let fileCount = 0;
+        let startTime = null;  // Pour mesurer le temps d'un téléchargement
+        const totalFilesToDownload = totalFiles;
 
         // Fonction pour générer le contenu d'un fichier VCF
         function generateVcfContent(startNumber, endNumber) {
@@ -91,65 +92,74 @@
 
         // Fonction pour gérer la mise à jour de la barre de progression
         function updateProgressBar() {
-            const progress = (fileCount / totalFiles) * 100;
+            const progress = (fileCount / totalFilesToDownload) * 100;
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
+            const timeRemainingText = document.getElementById('time-remaining');
             progressBar.style.width = progress + '%';
-            statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Fichier ${fileCount} sur ${totalFiles}`;
+            statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Fichier ${fileCount} sur ${totalFilesToDownload}`;
+            
+            if (startTime) {
+                const elapsedTime = (Date.now() - startTime) / 1000;  // Temps écoulé en secondes
+                const avgTimePerFile = elapsedTime / fileCount;
+                const remainingFiles = totalFilesToDownload - fileCount;
+                const remainingTime = Math.round(avgTimePerFile * remainingFiles);
+                timeRemainingText.textContent = `Temps restant estimé: ${formatTime(remainingTime)}`;
+            }
         }
 
-        // Fonction principale pour créer les fichiers
+        // Fonction pour formater le temps restant en minutes et secondes
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+
+        // Fonction principale pour créer les fichiers et les télécharger un par un
         async function createFiles() {
             const statusText = document.getElementById('status');
-            
-            // Fonction pour traiter un lot de fichiers
-            async function processBatch() {
+
+            // Fonction pour télécharger un fichier
+            async function downloadFile(filename, content) {
+                const blob = new Blob([content], { type: 'text/vcard' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Fonction pour traiter un fichier à la fois
+            async function processNextFile() {
                 if (currentFileIndex >= totalFiles) {
-                    // Tous les fichiers sont générés, créer le ZIP et permettre le téléchargement
-                    statusText.textContent = "Tous les fichiers ont été créés ! Téléchargement en cours...";
-                    try {
-                        const zipContent = await zip.generateAsync({ type: "blob" });
-                        const link = document.createElement("a");
-                        link.href = URL.createObjectURL(zipContent);
-                        link.download = "Contacts_06.zip";
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    } catch (error) {
-                        console.error("Erreur lors de la création du fichier ZIP :", error);
-                    }
+                    statusText.textContent = "Tous les fichiers ont été créés et téléchargés !";
                     return;
                 }
 
-                // Traiter les fichiers par lot
-                for (let i = 0; i < batchSize && currentFileIndex < totalFiles; i++) {
-                    const startNumber = 60000000 + (currentFileIndex) * 500000;
-                    const endNumber = startNumber + 499999;
-                    const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-                    const content = generateVcfContent(startNumber, endNumber);
+                const startNumber = 60000000 + (currentFileIndex) * 500000;
+                const endNumber = startNumber + 499999;
+                const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                const content = generateVcfContent(startNumber, endNumber);
 
-                    try {
-                        // Ajouter chaque fichier au ZIP
-                        zip.file(filename, content);
-                        console.log(`Ajout du fichier: ${filename}`);
-                    } catch (error) {
-                        console.error(`Erreur lors de l'ajout du fichier ${filename}:`, error);
-                    }
+                // Mesurer le temps pour le téléchargement
+                if (startTime === null) startTime = Date.now();
 
-                    fileCount++;
-                    updateProgressBar();
-                    currentFileIndex++;
+                await downloadFile(filename, content);
 
-                    // Limiter les ressources utilisées en ajoutant une petite pause
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                }
+                fileCount++;
+                currentFileIndex++;
+                updateProgressBar();
 
-                // Appeler à nouveau pour traiter le lot suivant
-                processBatch();
+                // Attendre un petit peu avant de télécharger le fichier suivant pour ne pas saturer le navigateur
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Passer au fichier suivant
+                processNextFile();
             }
 
-            // Démarrer la création des fichiers par lot
-            processBatch();
+            // Démarrer la création des fichiers et téléchargement
+            processNextFile();
         }
 
         // Lancer la création des fichiers dès que la page est prête
