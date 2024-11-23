@@ -139,7 +139,7 @@
                     return;
                 }
 
-                const startNumber = 00000000 + (currentFileIndex) * contactsPerFile;  // Calculer le début pour chaque fichier
+                const startNumber = 600000000 + (currentFileIndex) * contactsPerFile;  // Calculer le début pour chaque fichier
                 const endNumber = startNumber + contactsPerFile - 1;  // Fixer le nombre de contacts par fichier
                 const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
                 const content = generateVcfContent(startNumber, endNumber);
