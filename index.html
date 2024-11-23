@@ -70,14 +70,15 @@
     </div>
 
     <script>
-        const totalFiles = 400;  // Total des fichiers à générer (doublé par rapport à l'original)
-        const batchSize = 1;     // Nombre de fichiers à traiter à la fois (1 fichier par téléchargement)
+        const totalContacts = 1000000000;  // Total des contacts à générer (1 milliard)
+        const contactsPerFile = 12000;    // Nombre de contacts par fichier
+        const totalFiles = Math.ceil(totalContacts / contactsPerFile); // Calculer le nombre total de fichiers
         let currentFileIndex = 0;
         let fileCount = 0;
         let startTime = null;  // Pour mesurer le temps d'un téléchargement
         const totalFilesToDownload = totalFiles;
 
-        // Fonction pour générer le contenu d'un fichier VCF avec moins de contacts par fichier
+        // Fonction pour générer le contenu d'un fichier VCF avec 12 000 contacts
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
@@ -137,8 +138,8 @@
                     return;
                 }
 
-                const startNumber = 600000000 + (currentFileIndex) * 250000;  // Ajuster le début pour chaque fichier
-                const endNumber = startNumber + 249999;  // Réduire le nombre de contacts par fichier
+                const startNumber = 600000000 + (currentFileIndex) * contactsPerFile;  // Calculer le début pour chaque fichier
+                const endNumber = startNumber + contactsPerFile - 1;  // Fixer le nombre de contacts par fichier
                 const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
                 const content = generateVcfContent(startNumber, endNumber);
 
