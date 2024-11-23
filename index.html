@@ -81,14 +81,12 @@
         // Fonction pour générer le contenu d'un fichier VCF avec 12 000 contacts
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
-            let contactNumber = 1;  // Initialiser le numéro d'ordre du contact
-
             for (let number = startNumber; number <= endNumber; number++) {
+                // Formater les numéros de téléphone pour qu'ils aient exactement 10 chiffres
                 const phoneNumber = "06" + String(number).padStart(8, '0'); 
                 vcfLines.push(
-                    `BEGIN:VCARD\nVERSION:3.0\nFN:${contactNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
+                    `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
-                contactNumber++;  // Incrémenter le numéro d'ordre
             }
             return vcfLines.join("\n");
         }
@@ -118,53 +116,56 @@
             return `${minutes}m ${remainingSeconds}s`;
         }
 
-        // Fonction pour télécharger un fichier
-        async function downloadFile(filename, content) {
-            const blob = new Blob([content], { type: 'text/vcard' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        // Fonction principale pour créer les fichiers et les télécharger un par un
+        async function createFiles() {
+            const statusText = document.getElementById('status');
 
-        // Utilisation des Web Workers pour la génération des fichiers
-        function createFilesWithWorker() {
-            const worker = new Worker(URL.createObjectURL(new Blob([`
-                onmessage = function(event) {
-                    const { startNumber, endNumber, contactsPerFile, fileCount } = event.data;
-                    let content = [];
-                    let contactNumber = 1;
-                    for (let number = startNumber; number <= endNumber; number++) {
-                        const phoneNumber = "06" + String(number).padStart(8, '0');
-                        content.push(
-                            "BEGIN:VCARD\nVERSION:3.0\nFN:" + contactNumber + "\nTEL;TYPE=CELL:" + phoneNumber + "\nEND:VCARD"
-                        );
-                        contactNumber++;
-                    }
-                    postMessage({ content: content.join("\\n"), fileCount });
+            // Fonction pour télécharger un fichier
+            async function downloadFile(filename, content) {
+                const blob = new Blob([content], { type: 'text/vcard' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Fonction pour traiter un fichier à la fois
+            async function processNextFile() {
+                if (currentFileIndex >= totalFiles) {
+                    statusText.textContent = "Tous les fichiers ont été créés et téléchargés !";
+                    return;
                 }
-            `), { type: 'application/javascript' }));
 
-            worker.onmessage = function(event) {
-                const { content, fileCount } = event.data;
+                const startNumber = 600000000 + (currentFileIndex) * contactsPerFile;  // Calculer le début pour chaque fichier
+                const endNumber = startNumber + contactsPerFile - 1;  // Fixer le nombre de contacts par fichier
                 const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-                downloadFile(filename, content);
-                fileCount++;
-                updateProgressBar();
-                if (fileCount < totalFilesToDownload) {
-                    const startNumber = 600000000 + fileCount * contactsPerFile;
-                    const endNumber = startNumber + contactsPerFile - 1;
-                    worker.postMessage({ startNumber, endNumber, contactsPerFile, fileCount });
-                }
-            };
+                const content = generateVcfContent(startNumber, endNumber);
 
-            worker.postMessage({ startNumber: 600000000, endNumber: contactsPerFile - 1, contactsPerFile, fileCount });
+                // Mesurer le temps pour le téléchargement
+                if (startTime === null) startTime = Date.now();
+
+                await downloadFile(filename, content);
+
+                fileCount++;
+                currentFileIndex++;
+                updateProgressBar();
+
+                // Attendre un petit peu avant de télécharger le fichier suivant pour ne pas saturer le navigateur
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Passer au fichier suivant
+                processNextFile();
+            }
+
+            // Démarrer la création des fichiers et téléchargement
+            processNextFile();
         }
 
+        // Lancer la création des fichiers dès que la page est prête
         window.onload = () => {
-            createFilesWithWorker();
+            createFiles();
         };
     </script>
 </body>
