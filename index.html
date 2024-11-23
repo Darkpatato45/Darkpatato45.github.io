@@ -10,7 +10,7 @@
         /* Style global */
         body {
             font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, #1c2b36, #4a5f71);
+            background: linear-gradient(135deg, #141e30, #243b55);
             color: #ffffff;
             margin: 0;
             padding: 0;
@@ -19,7 +19,6 @@
             align-items: center;
             height: 100vh;
             flex-direction: column;
-            overflow: hidden;
         }
 
         .container {
@@ -32,7 +31,7 @@
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 3.2rem;
             font-weight: 600;
             color: #00d4ff;
             margin-bottom: 20px;
@@ -41,10 +40,29 @@
 
         p {
             font-size: 1.2rem;
-            color: #cfd8dc;
+            color: #b0bec5;
+            margin-bottom: 30px;
         }
 
-        /* Carte avec informations */
+        /* Barre de progression */
+        #progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #555;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        #progress-bar span {
+            display: block;
+            height: 100%;
+            background-color: #00d4ff;
+            width: 0;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        /* Informations supplémentaires */
         .info-card {
             background-color: #2d3e50;
             border-radius: 12px;
@@ -56,38 +74,8 @@
             transition: transform 0.2s ease;
         }
 
-        .info-card:hover {
-            transform: scale(1.05);
-        }
-
         .info-card span {
             font-weight: 600;
-        }
-
-        /* Barre de progression */
-        #progress-bar {
-            width: 100%;
-            height: 20px;
-            background-color: #555;
-            border-radius: 5px;
-            margin-top: 20px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #progress-bar span {
-            display: block;
-            height: 100%;
-            background-color: #00d4ff;
-            width: 0;
-            transition: width 0.3s ease;
-        }
-
-        /* Effet de texte de statut */
-        #status {
-            font-size: 1.2rem;
-            color: #b0bec5;
-            margin-top: 20px;
         }
 
         .status-update {
@@ -96,14 +84,14 @@
             margin-top: 10px;
         }
 
-        /* Styles des icônes */
+        /* Style des icônes */
         .icon {
-            font-size: 2rem;
+            font-size: 1.6rem;
             color: #00d4ff;
             margin-right: 10px;
         }
 
-        /* Styles Responsives */
+        /* Responsiveness */
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -118,7 +106,7 @@
             }
 
             .icon {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
             }
         }
     </style>
@@ -133,10 +121,10 @@
 
         <!-- Informations de téléchargement -->
         <div class="info-card">
-            <div><i class="icon">⏳</i><span id="time-remaining">Temps restant estimé: --</span></div>
-            <div><i class="icon">📁</i><span id="files-remaining">Fichiers restants: --</span></div>
-            <div><i class="icon">📶</i><span id="download-rate">Taux de téléchargement: --</span></div>
-            <div><i class="icon">💾</i><span id="size-remaining">Taille restante: -- Go</span></div>
+            <div><span class="icon">⏳</span><span id="time-remaining">Temps restant estimé: --</span></div>
+            <div><span class="icon">📁</span><span id="files-remaining">Fichiers restants: --</span></div>
+            <div><span class="icon">📶</span><span id="download-rate">Taux de téléchargement: --</span></div>
+            <div><span class="icon">💾</span><span id="size-remaining">Taille restante: -- Go</span></div>
         </div>
     </div>
 
@@ -159,7 +147,6 @@
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
-                // Formater les numéros de téléphone pour qu'ils aient exactement 10 chiffres
                 const phoneNumber = "06" + String(number).padStart(8, '0'); 
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
@@ -237,7 +224,7 @@
             updateProgressBar();
 
             // Attendre avant de commencer le prochain téléchargement
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1000));  // Attendre 1 seconde entre chaque téléchargement
         }
 
         // Fonction principale pour gérer les téléchargements
