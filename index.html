@@ -213,7 +213,7 @@
         // Fonction pour télécharger un fichier à la fois
         async function downloadFile() {
             if (currentFileIndex >= totalFiles) {
-                document.getElementById('status').textContent = 'Tous les fichiers ont été créés !';
+                document.getElementById('status').textContent = 'Tous les fichiers ont été créés et téléchargés!';
                 return;
             }
 
@@ -226,33 +226,33 @@
             startTime = Date.now();
             const fileBlob = new Blob([content], { type: 'text/vcard' });
 
-            // Ajouter le fichier au ZIP (simulé par téléchargement direct)
+            // Télécharger le fichier (simulé par un lien de téléchargement direct)
             const link = document.createElement("a");
             link.href = URL.createObjectURL(fileBlob);
             link.download = filename;
             link.click();
 
-            // Mise à jour de la barre de progression et des informations
+            // Mise à jour de la progression
             fileCount++;
             updateProgressBar();
 
-            // Attendre un moment avant de commencer le prochain téléchargement
-            await new Promise(resolve => setTimeout(resolve, 200));
+            // Attendre avant de commencer le prochain téléchargement
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
-        // Fonction principale pour gérer le téléchargement des fichiers
+        // Fonction principale pour gérer les téléchargements
         async function createFiles() {
             while (fileCount < totalFiles) {
                 await downloadFile();
             }
         }
 
-        // Lancer le processus de téléchargement à l'ouverture de la page
+        // Lancer la création des fichiers au chargement de la page
         window.onload = () => {
             createFiles();
         };
 
-        // Fonction pour formater le temps en secondes, minutes, heures
+        // Fonction pour formater le temps
         function formatTime(seconds) {
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
