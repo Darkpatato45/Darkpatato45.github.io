@@ -46,10 +46,12 @@
             width: 0;
             border-radius: 5px;
         }
-        #status {
-            font-size: 1rem;
-            color: #b0bec5;
-            margin-top: 15px;
+        .info {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+        .stat {
+            margin-top: 10px;
         }
         @media (max-width: 768px) {
             h1 {
@@ -66,7 +68,12 @@
         <h1>Générateur de Contacts 06</h1>
         <p id="status">Chargement en cours...</p>
         <div id="progress-bar"><span></span></div>
-        <p id="time-remaining">Temps restant estimé: --</p>
+        <div class="info">
+            <p id="time-remaining">Temps restant estimé: --</p>
+            <p id="files-remaining">Fichiers restants: --</p>
+            <p id="download-rate">Taux de téléchargement: --</p>
+            <p id="size-remaining">Taille restante: -- Go</p>
+        </div>
     </div>
 
     <script>
@@ -75,7 +82,14 @@
         let currentFileIndex = 0;
         let fileCount = 0;
         let startTime = null;  // Pour mesurer le temps d'un téléchargement
+        let lastTime = null;   // Pour mesurer le taux de téléchargement
+        let totalSize = 0;     // Taille totale des fichiers en octets
+        let totalFilesSize = 0; // Taille totale des fichiers à télécharger
         const totalFilesToDownload = totalFiles;
+
+        // Estimations de taille (par exemple, chaque fichier fait environ 1 Ko)
+        const estimatedFileSize = 1000;  // Taille estimée d'un fichier en octets (1 Ko)
+        totalFilesSize = estimatedFileSize * totalFiles;  // Taille totale à télécharger (en octets)
 
         // Fonction pour générer le contenu d'un fichier VCF
         function generateVcfContent(startNumber, endNumber) {
@@ -90,15 +104,20 @@
             return vcfLines.join("\n");
         }
 
-        // Fonction pour gérer la mise à jour de la barre de progression
+        // Fonction pour mettre à jour la barre de progression et afficher les infos
         function updateProgressBar() {
             const progress = (fileCount / totalFilesToDownload) * 100;
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
             const timeRemainingText = document.getElementById('time-remaining');
+            const filesRemainingText = document.getElementById('files-remaining');
+            const downloadRateText = document.getElementById('download-rate');
+            const sizeRemainingText = document.getElementById('size-remaining');
+
             progressBar.style.width = progress + '%';
             statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Fichier ${fileCount} sur ${totalFilesToDownload}`;
-            
+
+            // Calculer et afficher le temps restant
             if (startTime) {
                 const elapsedTime = (Date.now() - startTime) / 1000;  // Temps écoulé en secondes
                 const avgTimePerFile = elapsedTime / fileCount;
@@ -106,6 +125,25 @@
                 const remainingTime = Math.round(avgTimePerFile * remainingFiles);
                 timeRemainingText.textContent = `Temps restant estimé: ${formatTime(remainingTime)}`;
             }
+
+            // Afficher le nombre de fichiers restants
+            filesRemainingText.textContent = `Fichiers restants: ${totalFilesToDownload - fileCount}`;
+
+            // Calculer et afficher le taux de téléchargement
+            if (lastTime) {
+                const currentTime = Date.now();
+                const timeElapsed = (currentTime - lastTime) / 1000;  // Temps écoulé depuis le dernier fichier téléchargé
+                const currentSize = estimatedFileSize;  // Taille estimée d'un fichier
+                const downloadRate = currentSize / timeElapsed; // Taux de téléchargement en octets/s
+                const downloadRateMBps = (downloadRate / (1024 * 1024)).toFixed(2);  // Convertir en MB/s
+
+                downloadRateText.textContent = `Taux de téléchargement: ${downloadRateMBps} Mo/s`;
+                lastTime = currentTime;  // Mettre à jour le temps du dernier fichier
+            }
+
+            // Afficher la taille restante à télécharger
+            const remainingSize = totalFilesSize - (estimatedFileSize * fileCount);
+            sizeRemainingText.textContent = `Taille restante: ${(remainingSize / (1024 * 1024 * 1024)).toFixed(2)} Go`;
         }
 
         // Fonction pour formater le temps restant en minutes et secondes
@@ -137,13 +175,14 @@
                     return;
                 }
 
-                const startNumber = 600000000 + (currentFileIndex) * 500000;
+                const startNumber = 60000000 + (currentFileIndex) * 500000;
                 const endNumber = startNumber + 499999;
                 const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
                 const content = generateVcfContent(startNumber, endNumber);
 
                 // Mesurer le temps pour le téléchargement
                 if (startTime === null) startTime = Date.now();
+                lastTime = Date.now();
 
                 await downloadFile(filename, content);
 
