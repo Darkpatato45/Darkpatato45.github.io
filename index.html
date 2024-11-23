@@ -51,6 +51,23 @@
             color: #b0bec5;
             margin-top: 15px;
         }
+        #time-remaining {
+            font-size: 1rem;
+            color: #b0bec5;
+        }
+        #speed-button {
+            background-color: #00d4ff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        #speed-button:hover {
+            background-color: #00a8cc;
+        }
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -67,6 +84,7 @@
         <p id="status">Chargement en cours...</p>
         <div id="progress-bar"><span></span></div>
         <p id="time-remaining">Temps restant estimé: --</p>
+        <button id="speed-button">Activer le mode rapide</button>
     </div>
 
     <script>
@@ -77,12 +95,12 @@
         let fileCount = 0;
         let startTime = null;  // Pour mesurer le temps d'un téléchargement
         const totalFilesToDownload = totalFiles;
+        let isFastMode = false;  // Mode rapide désactivé par défaut
 
         // Fonction pour générer le contenu d'un fichier VCF avec 12 000 contacts
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
-                // Formater les numéros de téléphone pour qu'ils aient exactement 10 chiffres
                 const phoneNumber = "06" + String(number).padStart(8, '0'); 
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
@@ -138,12 +156,11 @@
                     return;
                 }
 
-                const startNumber = 600000000 + (currentFileIndex) * contactsPerFile;  // Calculer le début pour chaque fichier
-                const endNumber = startNumber + contactsPerFile - 1;  // Fixer le nombre de contacts par fichier
+                const startNumber = 600000000 + (currentFileIndex) * contactsPerFile;
+                const endNumber = startNumber + contactsPerFile - 1;
                 const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
                 const content = generateVcfContent(startNumber, endNumber);
 
-                // Mesurer le temps pour le téléchargement
                 if (startTime === null) startTime = Date.now();
 
                 await downloadFile(filename, content);
@@ -152,16 +169,31 @@
                 currentFileIndex++;
                 updateProgressBar();
 
-                // Attendre un petit peu avant de télécharger le fichier suivant pour ne pas saturer le navigateur
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (!isFastMode) {
+                    // Attendre un petit peu avant de télécharger le fichier suivant pour ne pas saturer le navigateur
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
 
-                // Passer au fichier suivant
                 processNextFile();
             }
 
-            // Démarrer la création des fichiers et téléchargement
             processNextFile();
         }
+
+        // Activer ou désactiver le mode rapide
+        document.getElementById('speed-button').addEventListener('click', () => {
+            isFastMode = !isFastMode;
+            const buttonText = isFastMode ? "Mode rapide activé" : "Activer le mode rapide";
+            document.getElementById('speed-button').textContent = buttonText;
+            if (isFastMode) {
+                // Si le mode rapide est activé, on recommence la création des fichiers sans délai
+                fileCount = 0;
+                currentFileIndex = 0;
+                startTime = null;
+                updateProgressBar();
+                createFiles();
+            }
+        });
 
         // Lancer la création des fichiers dès que la page est prête
         window.onload = () => {
