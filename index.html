@@ -81,13 +81,10 @@
         // Fonction pour générer le contenu d'un fichier VCF avec 12 000 contacts
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
-            for (let number = startNumber; number <= endNumber; number++) {
-                // Extraire la partie numérique du numéro de téléphone après le 06
-                const phoneNumber = String(number).padStart(8, '0');
-                const contactNumber = parseInt(phoneNumber);  // Convertir en nombre entier
-
-                // Convertir le numéro en hexadécimal
-                const generationHex = contactNumber.toString(16).toUpperCase(); // Convertir en hexadécimal
+            for (let i = startNumber; i <= endNumber; i++) {
+                // Formater le numéro de téléphone sous la forme 0600000001, 0600000002, ...
+                const phoneNumber = String(i).padStart(8, '0');
+                const generationHex = i.toString(16).toUpperCase(); // La génération sous forme hexadécimale
 
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${generationHex}\nTEL;TYPE=CELL:6${phoneNumber}\nEND:VCARD`
