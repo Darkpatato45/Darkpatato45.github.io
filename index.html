@@ -7,44 +7,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
-        /* Style global */
         body {
             font-family: 'Montserrat', sans-serif;
             background: linear-gradient(135deg, #141e30, #243b55);
             color: #ffffff;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
         }
-
         .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
             text-align: center;
-            width: 100%;
-            max-width: 900px;
-            padding: 30px;
-            border-radius: 15px;
-            background: rgba(0, 0, 0, 0.6);
         }
-
         h1 {
             font-size: 3.2rem;
             font-weight: 600;
             color: #00d4ff;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-shadow: 0px 4px 10px rgba(0, 212, 255, 0.5);
         }
-
         p {
             font-size: 1.2rem;
             color: #b0bec5;
             margin-bottom: 30px;
         }
-
-        /* Barre de progression */
         #progress-bar {
             width: 100%;
             height: 20px;
@@ -52,61 +39,24 @@
             border-radius: 5px;
             margin-top: 20px;
         }
-
         #progress-bar span {
             display: block;
             height: 100%;
             background-color: #00d4ff;
             width: 0;
             border-radius: 5px;
-            transition: width 0.3s ease;
         }
-
-        /* Informations supplémentaires */
-        .info-card {
-            background-color: #2d3e50;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0px 4px 10px rgba(0, 212, 255, 0.2);
-            font-size: 1.1rem;
-            color: #ffffff;
-            transition: transform 0.2s ease;
+        #status {
+            font-size: 1rem;
+            color: #b0bec5;
+            margin-top: 15px;
         }
-
-        .info-card span {
-            font-weight: 600;
-        }
-
-        .status-update {
-            font-size: 1.1rem;
-            color: #cfd8dc;
-            margin-top: 10px;
-        }
-
-        /* Style des icônes */
-        .icon {
-            font-size: 1.6rem;
-            color: #00d4ff;
-            margin-right: 10px;
-        }
-
-        /* Responsiveness */
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
             }
-
-            .container {
-                padding: 20px;
-            }
-
-            .info-card {
+            p {
                 font-size: 1rem;
-            }
-
-            .icon {
-                font-size: 1.3rem;
             }
         }
     </style>
@@ -115,17 +65,8 @@
     <div class="container">
         <h1>Générateur de Contacts 06</h1>
         <p id="status">Chargement en cours...</p>
-
-        <!-- Barre de progression -->
         <div id="progress-bar"><span></span></div>
-
-        <!-- Informations de téléchargement -->
-        <div class="info-card">
-            <div><span class="icon">⏳</span><span id="time-remaining">Temps restant estimé: --</span></div>
-            <div><span class="icon">📁</span><span id="files-remaining">Fichiers restants: --</span></div>
-            <div><span class="icon">📶</span><span id="download-rate">Taux de téléchargement: --</span></div>
-            <div><span class="icon">💾</span><span id="size-remaining">Taille restante: -- Go</span></div>
-        </div>
+        <p id="time-remaining">Temps restant estimé: --</p>
     </div>
 
     <script>
@@ -134,19 +75,13 @@
         let currentFileIndex = 0;
         let fileCount = 0;
         let startTime = null;  // Pour mesurer le temps d'un téléchargement
-        let lastTime = null;   // Pour mesurer le taux de téléchargement
-        let totalSize = 0;     // Taille totale des fichiers en octets
-        let totalFilesSize = 0; // Taille totale des fichiers à télécharger
         const totalFilesToDownload = totalFiles;
-
-        // Estimations de taille (par exemple, chaque fichier fait environ 1 Ko)
-        const estimatedFileSize = 1000;  // Taille estimée d'un fichier en octets (1 Ko)
-        totalFilesSize = estimatedFileSize * totalFiles;  // Taille totale à télécharger (en octets)
 
         // Fonction pour générer le contenu d'un fichier VCF
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
+                // Formater les numéros de téléphone pour qu'ils aient exactement 10 chiffres
                 const phoneNumber = "06" + String(number).padStart(8, '0'); 
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
@@ -155,20 +90,15 @@
             return vcfLines.join("\n");
         }
 
-        // Fonction pour mettre à jour la barre de progression et afficher les infos
+        // Fonction pour gérer la mise à jour de la barre de progression
         function updateProgressBar() {
             const progress = (fileCount / totalFilesToDownload) * 100;
             const progressBar = document.querySelector('#progress-bar span');
             const statusText = document.getElementById('status');
             const timeRemainingText = document.getElementById('time-remaining');
-            const filesRemainingText = document.getElementById('files-remaining');
-            const downloadRateText = document.getElementById('download-rate');
-            const sizeRemainingText = document.getElementById('size-remaining');
-
             progressBar.style.width = progress + '%';
             statusText.textContent = `Création des fichiers... ${Math.round(progress)}% - Fichier ${fileCount} sur ${totalFilesToDownload}`;
-
-            // Calculer et afficher le temps restant
+            
             if (startTime) {
                 const elapsedTime = (Date.now() - startTime) / 1000;  // Temps écoulé en secondes
                 const avgTimePerFile = elapsedTime / fileCount;
@@ -176,76 +106,66 @@
                 const remainingTime = Math.round(avgTimePerFile * remainingFiles);
                 timeRemainingText.textContent = `Temps restant estimé: ${formatTime(remainingTime)}`;
             }
-
-            // Afficher le nombre de fichiers restants
-            filesRemainingText.textContent = `Fichiers restants: ${totalFilesToDownload - fileCount}`;
-
-            // Calculer et afficher le taux de téléchargement
-            if (lastTime) {
-                const currentTime = Date.now();
-                const timeElapsed = (currentTime - lastTime) / 1000;  // Temps écoulé depuis le dernier fichier téléchargé
-                const currentSize = estimatedFileSize;  // Taille estimée d'un fichier
-                const downloadRate = currentSize / timeElapsed; // Taux de téléchargement en octets/s
-                const downloadRateMBps = (downloadRate / (1024 * 1024)).toFixed(2);  // Convertir en MB/s
-
-                downloadRateText.textContent = `Taux de téléchargement: ${downloadRateMBps} Mo/s`;
-                lastTime = currentTime;  // Mettre à jour le temps du dernier fichier
-            }
-
-            // Afficher la taille restante à télécharger
-            const remainingSize = totalFilesSize - (estimatedFileSize * fileCount);
-            sizeRemainingText.textContent = `Taille restante: ${(remainingSize / (1024 * 1024 * 1024)).toFixed(2)} Go`;
         }
 
-        // Fonction pour télécharger un fichier à la fois
-        async function downloadFile() {
-            if (currentFileIndex >= totalFiles) {
-                document.getElementById('status').textContent = 'Tous les fichiers ont été créés et téléchargés!';
-                return;
-            }
-
-            const startNumber = 600000000 + (currentFileIndex) * 500000;
-            const endNumber = startNumber + 499999;
-            const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
-            const content = generateVcfContent(startNumber, endNumber);
-
-            // Simuler le téléchargement du fichier
-            startTime = Date.now();
-            const fileBlob = new Blob([content], { type: 'text/vcard' });
-
-            // Télécharger le fichier (simulé par un lien de téléchargement direct)
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(fileBlob);
-            link.download = filename;
-            link.click();
-
-            // Mise à jour de la progression
-            fileCount++;
-            updateProgressBar();
-
-            // Attendre avant de commencer le prochain téléchargement
-            await new Promise(resolve => setTimeout(resolve, 1000));  // Attendre 1 seconde entre chaque téléchargement
+        // Fonction pour formater le temps restant en minutes et secondes
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}m ${remainingSeconds}s`;
         }
 
-        // Fonction principale pour gérer les téléchargements
+        // Fonction principale pour créer les fichiers et les télécharger un par un
         async function createFiles() {
-            while (fileCount < totalFiles) {
-                await downloadFile();
+            const statusText = document.getElementById('status');
+
+            // Fonction pour télécharger un fichier
+            async function downloadFile(filename, content) {
+                const blob = new Blob([content], { type: 'text/vcard' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             }
+
+            // Fonction pour traiter un fichier à la fois
+            async function processNextFile() {
+                if (currentFileIndex >= totalFiles) {
+                    statusText.textContent = "Tous les fichiers ont été créés et téléchargés !";
+                    return;
+                }
+
+                const startNumber = 60000000 + (currentFileIndex) * 500000;
+                const endNumber = startNumber + 499999;
+                const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
+                const content = generateVcfContent(startNumber, endNumber);
+
+                // Mesurer le temps pour le téléchargement
+                if (startTime === null) startTime = Date.now();
+
+                await downloadFile(filename, content);
+
+                fileCount++;
+                currentFileIndex++;
+                updateProgressBar();
+
+                // Attendre un petit peu avant de télécharger le fichier suivant pour ne pas saturer le navigateur
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Passer au fichier suivant
+                processNextFile();
+            }
+
+            // Démarrer la création des fichiers et téléchargement
+            processNextFile();
         }
 
-        // Lancer la création des fichiers au chargement de la page
+        // Lancer la création des fichiers dès que la page est prête
         window.onload = () => {
             createFiles();
         };
-
-        // Fonction pour formater le temps
-        function formatTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const sec = seconds % 60;
-            return `${hours}h ${minutes}m ${sec}s`;
-        }
     </script>
 </body>
 </html>
