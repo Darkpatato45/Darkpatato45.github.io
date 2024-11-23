@@ -82,10 +82,11 @@
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
-                // Formater les numéros de téléphone pour qu'ils aient exactement 10 chiffres
+                // Utiliser le numéro de génération comme nom du contact
+                const generation = number - startNumber + 1;  // Calculer la génération (1, 2, 3, ...)
                 const phoneNumber = "06" + String(number).padStart(8, '0'); 
                 vcfLines.push(
-                    `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
+                    `BEGIN:VCARD\nVERSION:3.0\nFN:Generation ${generation}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
             }
             return vcfLines.join("\n");
