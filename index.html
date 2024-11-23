@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,7 +80,8 @@
         function generateVcfContent(startNumber, endNumber) {
             const vcfLines = [];
             for (let number = startNumber; number <= endNumber; number++) {
-                const phoneNumber = "0" + number.toString();
+                // Formater les numéros de téléphone pour qu'ils aient exactement 10 chiffres
+                const phoneNumber = "06" + String(number).padStart(8, '0'); 
                 vcfLines.push(
                     `BEGIN:VCARD\nVERSION:3.0\nFN:${phoneNumber}\nTEL;TYPE=CELL:${phoneNumber}\nEND:VCARD`
                 );
@@ -122,7 +123,7 @@
 
                 // Traiter les fichiers par lot
                 for (let i = 0; i < batchSize && currentFileIndex < totalFiles; i++) {
-                    const startNumber = 600000000 + (currentFileIndex) * 500000;
+                    const startNumber = 60000000 + (currentFileIndex) * 500000;
                     const endNumber = startNumber + 499999;
                     const filename = `Contacts_06_${startNumber}-${endNumber}.vcf`;
                     const content = generateVcfContent(startNumber, endNumber);
