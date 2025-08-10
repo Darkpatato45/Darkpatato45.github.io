@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Visorando-like GPX Viewer — Static</title>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- togeojson (GPX -> GeoJSON) -->
+  <script src="https://unpkg.com/togeojson@0.16.0/dist/togeojson.min.js"></script>
+  <!-- Chart.js for elevation profile -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Simple fonts & styling -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#06b6d4}
+    html,body,#map{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#071026 0%, #081425 100%);color:#e6eef6}
+    .app{display:grid;grid-template-columns:1fr 420px;gap:18px;height:100vh;padding:18px}
+    .left{display:flex;flex-direction:column;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    .mapwrap{flex:1}
+    .sidebar{width:420px;padding:18px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border-radius:12px}
+    .card{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:12px}
+    h1{margin:0 0 8px 0;font-size:18px}
+    label.file{display:block;padding:10px;border:2px dashed rgba(255,255,255,0.06);text-align:center;border-radius:10px;cursor:pointer}
+    input[type=file]{display:none}
+    .stats{display:flex;gap:10px;flex-wrap:wrap}
+    .stat{flex:1;min-width:110px;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;text-align:center}
+    .small{font-size:12px;color:var(--muted)}
+    canvas{width:100% !important;height:140px !important}
+    .controls{display:flex;gap:8px;margin-top:8px}
+    button{background:var(--accent);border:none;padding:8px 10px;border-radius:8px;color:#041021;cursor:pointer;font-weight:600}
+    footer{font-size:12px;color:var(--muted);margin-top:8px}
+    @media(max-width:900px){.app{grid-template-columns:1fr;grid-auto-rows:1fr}.sidebar{width:100%;height:360px;overflow:auto}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="left">
+      <div class="mapwrap card" id="mapwrap" style="flex:1;">
+        <div id="map" style="height:100%"></div>
+      </div>
+      <div class="card" style="margin-top:12px;display:flex;gap:12px;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-weight:600">Visorando-like GPX viewer</div>
+          <div class="small">Glisser-déposer ou importer un fichier GPX pour afficher l'itinéraire.</div>
+        </div>
+        <div class="small">Statique · Pas de données envoyées</div>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <h1>Importer un GPX</h1>
+      <label class="file" for="gpxfile" id="dropzone">Cliquez ou déposez un fichier GPX ici</label>
+      <input id="gpxfile" type="file" accept=".gpx" />
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:600">Résumé</div>
+          <div class="small" id="fileName">Aucun fichier</div>
+        </div>
+        <div class="stats" id="stats">
+          <div class="stat"><div id="distance">—</div><div class="small">Distance (km)</div></div>
+          <div class="stat"><div id="duration">—</div><div class="small">Durée estimée</div></div>
+          <div class="stat"><div id="ascent">—</div><div class="small">Dénivelé + (m)</div></div>
+          <div class="stat"><div id="points">—</div><div class="small">Points</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:8px">Profil d'altitude</div>
+        <canvas id="elevChart"></canvas>
+        <div class="small" style="margin-top:8px">Survolez le graphique pour voir l'altitude le long du parcours.</div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:8px">Actions</div>
+        <div class="controls">
+          <button id="zoomToTrack">Zoom sur l'itinéraire</button>
+          <button id="clear">Effacer</button>
+        </div>
+        <footer>Fichier traité côté client. Aucune donnée n'est envoyée.</footer>
+      </div>
+    </aside>
+  </div>
+
+<script>
+const map = L.map('map', {minZoom: 2}).setView([46.8, 2.5], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap contributors'}).addTo(map);
+let trackLayer = L.layerGroup().addTo(map);
+let startMarker, endMarker;
+
+function haversine(a,b){
+  const toRad = x=>x*Math.PI/180;
+  const R = 6371000;
+  const dLat = toRad(b.lat-a.lat);
+  const dLon = toRad(b.lng-a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const sin1 = Math.sin(dLat/2), sin2 = Math.sin(dLon/2);
+  const c = 2*Math.atan2(Math.sqrt(sin1*sin1 + Math.cos(lat1)*Math.cos(lat2)*sin2*sin2), Math.sqrt(1-(sin1*sin1 + Math.cos(lat1)*Math.cos(lat2)*sin2*sin2)));
+  return R*c;
+}
+
+function formatDistance(m){ return (m/1000).toFixed(2); }
+function formatTime(sec){ if(!sec) return '—'; const h = Math.floor(sec/3600); const m = Math.floor((sec%3600)/60); return h>0? `${h}h ${m}m` : `${m}m`; }
+
+const fileInput = document.getElementById('gpxfile');
+const dropzone = document.getElementById('dropzone');
+const fileNameEl = document.getElementById('fileName');
+const distanceEl = document.getElementById('distance');
+const durationEl = document.getElementById('duration');
+const ascentEl = document.getElementById('ascent');
+const pointsEl = document.getElementById('points');
+let elevationChart = null;
+
+['dragenter','dragover','dragleave','drop'].forEach(evt=>{
+  dropzone.addEventListener(evt, e=>e.preventDefault());
+});
+
+dropzone.addEventListener('drop', async (e)=>{
+  const f = e.dataTransfer.files[0];
+  if(f) await handleFile(f);
+});
+
+fileInput.addEventListener('change', async (e)=>{
+  const f = e.target.files[0];
+  if(f) await handleFile(f);
+});
+
+dropzone.addEventListener('click', ()=>fileInput.click());
+
+async function handleFile(file){
+  if(!file.name.toLowerCase().endsWith('.gpx')){ alert('Veuillez fournir un fichier .gpx'); return; }
+  fileNameEl.textContent = file.name;
+  const text = await file.text();
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(text, 'application/xml');
+  const geojson = toGeoJSON.gpx(xml);
+  renderGeoJSON(geojson);
+}
+
+function renderGeoJSON(geojson){
+  trackLayer.clearLayers();
+  const tracks = [];
+  const points = [];
+  geojson.features.forEach(f=>{
+    if(f.geometry?.type === 'LineString') tracks.push(f);
+    else if(f.geometry?.type === 'MultiLineString'){
+      f.geometry.coordinates.forEach(coords=>{
+        tracks.push({type:'Feature',properties:f.properties,geometry:{type:'LineString',coordinates:coords}});
+      });
+    } else if(f.geometry?.type === 'Point') points.push(f);
+  });
+
+  if(tracks.length===0){ alert('Aucun tracé trouvé dans ce GPX.'); return; }
+
+  const coords = tracks[0].geometry.coordinates;
+  const latlngs = coords.map(c=>({lat:c[1],lng:c[0],ele: c[2] ?? null}));
+
+  const poly = L.polyline(latlngs.map(p=>[p.lat,p.lng]), {color:'#06b6d4',weight:4}).addTo(trackLayer);
+
+  if(startMarker) trackLayer.removeLayer(startMarker);
+  if(endMarker) trackLayer.removeLayer(endMarker);
+  startMarker = L.marker([latlngs[0].lat, latlngs[0].lng]).addTo(trackLayer).bindPopup('Départ');
+  endMarker = L.marker([latlngs[latlngs.length-1].lat, latlngs[latlngs.length-1].lng]).addTo(trackLayer).bindPopup('Arrivée');
+
+  let totalDist = 0; let ascent = 0; let descent = 0; let pts=latlngs.length;
+  for(let i=1;i<latlngs.length;i++){
+    totalDist += haversine(latlngs[i-1], latlngs[i]);
+    const e1 = latlngs[i-1].ele; const e2 = latlngs[i].ele;
+    if(e1!=null && e2!=null){ const delta = e2 - e1; if(delta>0) ascent += delta; else descent += Math.abs(delta); }
+  }
+  distanceEl.textContent = formatDistance(totalDist);
+  ascentEl.textContent = Math.round(ascent);
+  pointsEl.textContent = pts;
+  const hoursFlat = (totalDist/1000)/4.5;
+  const extra = (ascent/300)*0.5;
+  const durationSec = Math.round((hoursFlat+extra)*3600);
+  durationEl.textContent = formatTime(durationSec);
+
+  map.fitBounds(poly.getBounds(), {padding:[40,40]});
+
+  const elevations = latlngs.map((p,i)=>({d:i, ele: p.ele ?? null}));
+  const labels = elevations.map((p,i)=> (i+1));
+  const eleData = elevations.map(p=> p.ele === null ? null : p.ele);
+  renderElevationChart(labels, eleData);
+}
+
+function renderElevationChart(labels, data){
+  const ctx = document.getElementById('elevChart').getContext('2d');
+  if(elevationChart) elevationChart.destroy();
+  elevationChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ label: 'Altitude (m)', data: data, fill: true, tension: 0.2, pointRadius:0 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false}},
+      scales:{ x:{ display:false }, y:{ beginAtZero:false } },
+      elements:{line:{borderWidth:2}}
+    }
+  });
+}
+
+document.getElementById('zoomToTrack').addEventListener('click', ()=>{
+  if(trackLayer.getLayers().length===0) return alert('Aucun tracé à zoomer.');
+  const b = trackLayer.getBounds ? trackLayer.getBounds() : trackLayer.getLayers()[0].getBounds();
+  map.fitBounds(b, {padding:[40,40]});
+});
+
+document.getElementById('clear').addEventListener('click', ()=>{
+  trackLayer.clearLayers(); fileNameEl.textContent = 'Aucun fichier'; distanceEl.textContent='—'; ascentEl.textContent='—'; pointsEl.textContent='—'; durationEl.textContent='—'; if(elevationChart) elevationChart.destroy();
+});
+
+['dragenter','dragover'].forEach(ev=>{
+  dropzone.addEventListener(ev, ()=> dropzone.style.borderColor = 'rgba(6,182,212,0.9)');
+});
+['dragleave','drop'].forEach(ev=>{
+  dropzone.addEventListener(ev, ()=> dropzone.style.borderColor = 'rgba(255,255,255,0.06)');
+});
+</script>
+</body>
+</html>
